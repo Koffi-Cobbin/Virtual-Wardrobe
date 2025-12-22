@@ -1,31 +1,28 @@
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { Environment, Center, ContactShadows, OrbitControls, Html } from '@react-three/drei';
-import { Suspense, useEffect, useRef } from 'react';
+import { Suspense, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useStore } from '@/store';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-// Assets
-import defaultPerson from '@assets/person_0_1766404645511.glb?url';
-import defaultObject from '@assets/object_0_1766404645511.glb?url';
-
 function Model({ url }: { url: string }) {
+  // Use useMemo to avoid reloading the loader every time
   const gltf = useLoader(GLTFLoader, url);
   
   // Clone the scene to allow multiple instances and avoid mutation issues
-  const scene = gltf.scene.clone();
+  const scene = useMemo(() => {
+    if (!gltf) return null;
+    return gltf.scene.clone();
+  }, [gltf]);
 
+  if (!scene) return null;
   return <primitive object={scene} />;
 }
 
 function SceneContent() {
-  const { avatarUrl, wearableUrl, rotationVelocity, setAvatarUrl, setWearableUrl } = useStore();
-
-  useEffect(() => {
-    // Force set defaults if nothing is loaded
-    if (!avatarUrl) setAvatarUrl(defaultPerson);
-    if (!wearableUrl) setWearableUrl(defaultObject);
-  }, [avatarUrl, wearableUrl, setAvatarUrl, setWearableUrl]);
+  const avatarUrl = useStore((state) => state.avatarUrl);
+  const wearableUrl = useStore((state) => state.wearableUrl);
+  const rotationVelocity = useStore((state) => state.rotationVelocity);
 
   const groupRef = useRef<THREE.Group>(null);
 
@@ -39,7 +36,7 @@ function SceneContent() {
     <group position={[0, -1, 0]}>
       <Center top>
         <group ref={groupRef}>
-          <Suspense fallback={<Html><div className="text-white font-mono text-xs whitespace-nowrap">INITIALIZING...</div></Html>}>
+          <Suspense fallback={<Html center><div className="text-primary font-display font-bold animate-pulse text-lg">INITIALIZING AVATAR...</div></Html>}>
             {avatarUrl && <Model url={avatarUrl} />}
           </Suspense>
           
@@ -63,17 +60,17 @@ function SceneContent() {
 
 export default function Experience() {
   return (
-    <div className="w-full h-full bg-gradient-to-b from-gray-900 via-gray-950 to-black">
+    <div className="w-full h-full bg-gradient-to-b from-gray-950 via-black to-gray-950">
       <Canvas shadows camera={{ position: [0, 0, 5], fov: 40 }} gl={{ antialias: true }}>
-        <fog attach="fog" args={['#0a0a0a', 8, 20]} />
-        <ambientLight intensity={0.7} />
+        <fog attach="fog" args={['#050505', 8, 20]} />
+        <ambientLight intensity={0.8} />
         <directionalLight 
           position={[10, 10, 5]} 
           intensity={1.5} 
           castShadow 
           shadow-mapSize={[1024, 1024]}
         />
-        <pointLight position={[-10, -10, -10]} color="#3b82f6" intensity={1} />
+        <pointLight position={[-10, 10, -10]} color="#f59e0b" intensity={0.5} />
         <Environment preset="city" />
         
         <SceneContent />

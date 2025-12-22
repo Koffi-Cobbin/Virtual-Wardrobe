@@ -1,17 +1,19 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Joystick } from 'react-joystick-component';
 import { useStore } from '@/store';
-import { Shirt, User, Upload, Box, Check } from 'lucide-react';
+import { Shirt, User, Upload, Box, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 
 export default function Interface() {
   const { setRotationVelocity, setAvatarUrl, setWearableUrl, avatarUrl, wearableUrl } = useStore();
-  const [activeTab, setActiveTab] = useState<'avatar' | 'wearable'>('avatar');
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isUploadingWearable, setIsUploadingWearable] = useState(false);
 
   const handleJoystickMove = (event: any) => {
     if (event.x !== undefined) {
@@ -25,15 +27,30 @@ export default function Interface() {
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'wearable') => {
     const file = event.target.files?.[0];
-    if (file) {
-      // Create a blob URL for the uploaded file
+    if (!file) return;
+
+    if (type === 'avatar') setIsUploadingAvatar(true);
+    else setIsUploadingWearable(true);
+
+    // Simulate short processing time for better UX
+    setTimeout(() => {
       const url = URL.createObjectURL(file);
       if (type === 'avatar') {
         setAvatarUrl(url);
+        setIsUploadingAvatar(false);
+        toast.success("Avatar updated successfully", {
+          description: file.name,
+          icon: <CheckCircle2 className="text-green-500" />
+        });
       } else {
         setWearableUrl(url);
+        setIsUploadingWearable(false);
+        toast.success("Wearable equipped successfully", {
+          description: file.name,
+          icon: <CheckCircle2 className="text-green-500" />
+        });
       }
-    }
+    }, 800);
   };
 
   return (
@@ -43,17 +60,17 @@ export default function Interface() {
       <div className="flex justify-between items-start pointer-events-auto">
         <Sheet>
           <SheetTrigger asChild>
-            <Button size="icon" variant="outline" className="rounded-full w-14 h-14 bg-black/60 backdrop-blur-xl border-white/10 hover:bg-primary hover:text-primary-foreground transition-all duration-500 shadow-2xl group">
+            <Button size="icon" variant="outline" className="rounded-full w-14 h-14 bg-black/80 backdrop-blur-2xl border-white/10 hover:bg-primary hover:text-primary-foreground transition-all duration-500 shadow-2xl group active:scale-95">
               <Shirt className="w-7 h-7 group-hover:scale-110 transition-transform" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[320px] sm:w-[420px] border-r border-white/10 bg-black/95 backdrop-blur-2xl text-white p-0">
+          <SheetContent side="left" className="w-[320px] sm:w-[420px] border-r border-white/10 bg-black/95 backdrop-blur-3xl text-white p-0">
             <div className="h-full flex flex-col">
               <SheetHeader className="p-8 pb-4">
                 <SheetTitle className="text-3xl font-display font-bold text-white tracking-widest uppercase italic">
                   Wardrobe
                 </SheetTitle>
-                <p className="text-gray-500 text-xs font-mono tracking-widest">PERSONALIZATION INTERFACE V.2</p>
+                <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">Control Panel v2.8.4</p>
               </SheetHeader>
               
               <ScrollArea className="flex-1 px-8">
@@ -62,21 +79,21 @@ export default function Interface() {
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 text-primary">
-                        <User size={20} />
+                        <User size={20} className="animate-pulse" />
                         <h3 className="font-display text-lg font-bold uppercase tracking-widest">Base Body</h3>
                       </div>
-                      {avatarUrl && <Check size={16} className="text-green-500" />}
+                      {avatarUrl && !isUploadingAvatar && <CheckCircle2 size={16} className="text-green-500" />}
                     </div>
                     
                     <div className="group relative">
                       <Label 
                         htmlFor="avatar-upload" 
-                        className="flex flex-col items-center justify-center gap-4 h-32 border-2 border-dashed border-white/10 rounded-xl hover:border-primary/50 hover:bg-white/5 transition-all cursor-pointer group-hover:shadow-[0_0_20px_rgba(245,158,11,0.1)]"
+                        className={`flex flex-col items-center justify-center gap-4 h-36 border-2 border-dashed rounded-2xl transition-all cursor-pointer ${isUploadingAvatar ? 'border-primary bg-primary/10 animate-pulse' : 'border-white/10 hover:border-primary/50 hover:bg-white/5'}`}
                       >
-                        <Upload size={28} className="text-gray-500 group-hover:text-primary transition-colors" />
+                        <Upload size={32} className={`${isUploadingAvatar ? 'text-primary' : 'text-gray-500'} transition-colors`} />
                         <div className="text-center">
-                          <span className="text-sm font-bold block">REPLACE AVATAR</span>
-                          <span className="text-[10px] text-gray-500 font-mono">GLB / PLY SUPPORTED</span>
+                          <span className="text-sm font-bold block">{isUploadingAvatar ? 'PROCESSING...' : 'UPLOAD AVATAR'}</span>
+                          <span className="text-[10px] text-gray-500 font-mono">.GLB / .PLY SUPPORTED</span>
                         </div>
                         <Input 
                           id="avatar-upload" 
@@ -84,6 +101,7 @@ export default function Interface() {
                           accept=".glb,.gltf,.ply" 
                           className="hidden" 
                           onChange={(e) => handleFileUpload(e, 'avatar')}
+                          disabled={isUploadingAvatar}
                         />
                       </Label>
                     </div>
@@ -95,21 +113,21 @@ export default function Interface() {
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 text-primary">
-                        <Box size={20} />
-                        <h3 className="font-display text-lg font-bold uppercase tracking-widest">Equipable</h3>
+                        <Box size={20} className="animate-pulse" />
+                        <h3 className="font-display text-lg font-bold uppercase tracking-widest">Loadout</h3>
                       </div>
-                      {wearableUrl && <Check size={16} className="text-green-500" />}
+                      {wearableUrl && !isUploadingWearable && <CheckCircle2 size={16} className="text-green-500" />}
                     </div>
 
                     <div className="group relative">
                       <Label 
                         htmlFor="wearable-upload" 
-                        className="flex flex-col items-center justify-center gap-4 h-32 border-2 border-dashed border-white/10 rounded-xl hover:border-primary/50 hover:bg-white/5 transition-all cursor-pointer group-hover:shadow-[0_0_20px_rgba(245,158,11,0.1)]"
+                        className={`flex flex-col items-center justify-center gap-4 h-36 border-2 border-dashed rounded-2xl transition-all cursor-pointer ${isUploadingWearable ? 'border-primary bg-primary/10 animate-pulse' : 'border-white/10 hover:border-primary/50 hover:bg-white/5'}`}
                       >
-                        <Upload size={28} className="text-gray-500 group-hover:text-primary transition-colors" />
+                        <Upload size={32} className={`${isUploadingWearable ? 'text-primary' : 'text-gray-500'} transition-colors`} />
                         <div className="text-center">
-                          <span className="text-sm font-bold block">LOAD WEARABLE</span>
-                          <span className="text-[10px] text-gray-500 font-mono">GLB / PLY SUPPORTED</span>
+                          <span className="text-sm font-bold block">{isUploadingWearable ? 'PROCESSING...' : 'EQUIP WEARABLE'}</span>
+                          <span className="text-[10px] text-gray-500 font-mono">.GLB / .PLY SUPPORTED</span>
                         </div>
                         <Input 
                           id="wearable-upload" 
@@ -117,22 +135,26 @@ export default function Interface() {
                           accept=".glb,.gltf,.ply" 
                           className="hidden" 
                           onChange={(e) => handleFileUpload(e, 'wearable')}
+                          disabled={isUploadingWearable}
                         />
                       </Label>
                     </div>
                   </section>
 
-                  {/* Status Card */}
-                  <div className="mt-8 p-6 bg-primary/5 rounded-xl border border-primary/20 space-y-2">
-                    <div className="flex justify-between text-[10px] font-mono text-primary/60 italic">
-                      <span>SYNC STATUS</span>
-                      <span>ACTIVE</span>
+                  {/* Telemetry Card */}
+                  <div className="mt-8 p-6 bg-primary/5 rounded-2xl border border-primary/20 space-y-4 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+                    <div className="flex justify-between text-[10px] font-mono text-primary italic relative">
+                      <span>SYNC ENGINE</span>
+                      <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping"/> ONLINE</span>
                     </div>
-                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full w-2/3 bg-primary animate-pulse" />
+                    <div className="space-y-1">
+                      <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full w-[85%] bg-primary" />
+                      </div>
                     </div>
-                    <p className="text-[10px] text-gray-400 leading-relaxed font-mono mt-4 uppercase">
-                      Load your assets to visualize real-time fit and aesthetics.
+                    <p className="text-[10px] text-gray-400 leading-relaxed font-mono uppercase tracking-tighter">
+                      Systems operational. Dynamic asset injection ready for deployment.
                     </p>
                   </div>
                 </div>
@@ -141,43 +163,46 @@ export default function Interface() {
           </SheetContent>
         </Sheet>
         
-        {/* Title Overlay */}
+        {/* HUD Overlay */}
         <div className="text-right">
           <h1 className="text-4xl font-display font-bold text-white uppercase tracking-tighter italic">
-            Visual <span className="text-primary">Fit</span>
+            Virtual <span className="text-primary">Fit</span>
           </h1>
           <div className="flex items-center justify-end gap-2">
-            <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
-            <p className="text-[10px] text-gray-500 font-mono tracking-[0.2em] uppercase">Engine v2.5.0</p>
+            <p className="text-[10px] text-gray-600 font-mono tracking-[0.4em] uppercase">GRID-COORD: 42.7.99</p>
           </div>
         </div>
       </div>
 
-      {/* Footer / Controls */}
+      {/* Footer Controls */}
       <div className="flex justify-between items-end pointer-events-auto">
         <div className="mb-4">
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] text-gray-500 font-mono uppercase tracking-widest">System Telemetry</div>
-            <div className="h-[1px] w-32 bg-white/10" />
-            <div className="text-[10px] text-primary font-mono tabular-nums uppercase">
-              R-VEL: {(Math.random() * 100).toFixed(2)}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-8 bg-primary/20 rounded-full overflow-hidden">
+                <div className="w-full h-1/2 bg-primary animate-bounce" />
+              </div>
+              <div className="text-[10px] text-gray-500 font-mono uppercase tracking-[0.2em]">Signal Strength</div>
+            </div>
+            <div className="text-[10px] text-primary/40 font-mono tabular-nums uppercase">
+              Lat: 22ms | Fr: 60fps
             </div>
           </div>
         </div>
         
-        <div className="relative group">
-          <div className="absolute -inset-4 bg-primary/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-          <div className="relative bg-black/40 backdrop-blur-xl rounded-full p-3 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+        <div className="relative group p-4">
+          <div className="absolute inset-0 bg-primary/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+          <div className="relative bg-black/60 backdrop-blur-2xl rounded-full p-4 border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)] ring-1 ring-white/5">
              <Joystick 
-                size={100} 
+                size={110} 
                 stickColor="hsl(35, 100%, 60%)" 
-                baseColor="rgba(255,255,255,0.03)" 
+                baseColor="rgba(255,255,255,0.02)" 
                 move={handleJoystickMove} 
                 stop={handleJoystickStop}
               />
           </div>
           <div className="absolute -bottom-8 w-full text-center">
-            <span className="text-[10px] text-primary/60 font-mono uppercase tracking-[0.3em] font-bold">Rotation Axis</span>
+            <span className="text-[10px] text-primary/40 font-mono uppercase tracking-[0.5em] font-black group-hover:text-primary transition-colors">Orbit Engine</span>
           </div>
         </div>
       </div>
