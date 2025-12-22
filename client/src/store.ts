@@ -1,5 +1,9 @@
 import { create } from 'zustand';
 
+// Import assets using Vite's ?url suffix to get the correct path during development/build
+import defaultPerson from '@assets/person_0_1766404645511.glb?url';
+import defaultObject from '@assets/object_0_1766404645511.glb?url';
+
 interface AppState {
   avatarUrl: string | null;
   wearableUrl: string | null;
@@ -10,10 +14,9 @@ interface AppState {
   setRotationVelocity: (velocity: number) => void;
 }
 
-// Initial state with absolute paths from the root to ensure they are found by Vite
 export const useStore = create<AppState>((set) => ({
-  avatarUrl: '/attached_assets/person_0_1766404645511.glb',
-  wearableUrl: '/attached_assets/object_0_1766404645511.glb',
+  avatarUrl: defaultPerson,
+  wearableUrl: defaultObject,
   rotationVelocity: 0,
   
   setAvatarUrl: (url) => set({ avatarUrl: url }),
