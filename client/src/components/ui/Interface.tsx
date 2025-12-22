@@ -11,7 +11,16 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 
 export default function Interface() {
-  const { setRotationVelocity, setAvatarUrl, setWearableUrl, avatarUrl, wearableUrl } = useStore();
+  const { 
+    setRotationVelocity, 
+    setAvatarUrl, 
+    setWearableUrl, 
+    avatarUrl, 
+    wearableUrl,
+    hasUploadedAvatar,
+    hasUploadedWearable 
+  } = useStore();
+  
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingWearable, setIsUploadingWearable] = useState(false);
 
@@ -32,18 +41,17 @@ export default function Interface() {
     if (type === 'avatar') setIsUploadingAvatar(true);
     else setIsUploadingWearable(true);
 
-    // Simulate short processing time for better UX
     setTimeout(() => {
       const url = URL.createObjectURL(file);
       if (type === 'avatar') {
-        setAvatarUrl(url);
+        setAvatarUrl(url, true);
         setIsUploadingAvatar(false);
         toast.success("Avatar updated successfully", {
           description: file.name,
           icon: <CheckCircle2 className="text-green-500" />
         });
       } else {
-        setWearableUrl(url);
+        setWearableUrl(url, true);
         setIsUploadingWearable(false);
         toast.success("Wearable equipped successfully", {
           description: file.name,
@@ -82,7 +90,7 @@ export default function Interface() {
                         <User size={20} className="animate-pulse" />
                         <h3 className="font-display text-lg font-bold uppercase tracking-widest">Base Body</h3>
                       </div>
-                      {avatarUrl && !isUploadingAvatar && <CheckCircle2 size={16} className="text-green-500" />}
+                      {hasUploadedAvatar && !isUploadingAvatar && <CheckCircle2 size={16} className="text-green-500" />}
                     </div>
                     
                     <div className="group relative">
@@ -116,7 +124,7 @@ export default function Interface() {
                         <Box size={20} className="animate-pulse" />
                         <h3 className="font-display text-lg font-bold uppercase tracking-widest">Loadout</h3>
                       </div>
-                      {wearableUrl && !isUploadingWearable && <CheckCircle2 size={16} className="text-green-500" />}
+                      {hasUploadedWearable && !isUploadingWearable && <CheckCircle2 size={16} className="text-green-500" />}
                     </div>
 
                     <div className="group relative">
