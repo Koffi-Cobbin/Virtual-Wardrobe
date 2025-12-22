@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Joystick } from 'react-joystick-component';
 import { useStore } from '@/store';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Shirt, User, Upload, Box } from 'lucide-react';
+import { Shirt, User, Upload, Box, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,12 +11,10 @@ import { Separator } from '@/components/ui/separator';
 
 export default function Interface() {
   const { setRotationVelocity, setAvatarUrl, setWearableUrl, avatarUrl, wearableUrl } = useStore();
+  const [activeTab, setActiveTab] = useState<'avatar' | 'wearable'>('avatar');
 
   const handleJoystickMove = (event: any) => {
     if (event.x !== undefined) {
-      // Map x component to rotation velocity
-      // Joystick x is usually -1 to 1 (or similar based on size)
-      // We invert it if needed depending on desired direction
       setRotationVelocity(event.x);
     }
   };
@@ -29,9 +26,13 @@ export default function Interface() {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'wearable') => {
     const file = event.target.files?.[0];
     if (file) {
+      // Create a blob URL for the uploaded file
       const url = URL.createObjectURL(file);
-      if (type === 'avatar') setAvatarUrl(url);
-      else setWearableUrl(url);
+      if (type === 'avatar') {
+        setAvatarUrl(url);
+      } else {
+        setWearableUrl(url);
+      }
     }
   };
 
@@ -42,119 +43,141 @@ export default function Interface() {
       <div className="flex justify-between items-start pointer-events-auto">
         <Sheet>
           <SheetTrigger asChild>
-            <Button size="icon" variant="outline" className="rounded-full w-12 h-12 bg-black/40 backdrop-blur border-white/10 hover:bg-primary/20 hover:border-primary/50 transition-all duration-300">
-              <Shirt className="w-6 h-6 text-white" />
+            <Button size="icon" variant="outline" className="rounded-full w-14 h-14 bg-black/60 backdrop-blur-xl border-white/10 hover:bg-primary hover:text-primary-foreground transition-all duration-500 shadow-2xl group">
+              <Shirt className="w-7 h-7 group-hover:scale-110 transition-transform" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] sm:w-[400px] border-r border-white/10 bg-black/90 backdrop-blur-xl text-white">
-            <SheetHeader className="mb-6">
-              <SheetTitle className="text-2xl font-display font-bold text-white tracking-wider uppercase">
-                Fitting Room
-              </SheetTitle>
-              <p className="text-gray-400 text-sm">Customize your loadout</p>
-            </SheetHeader>
-            
-            <ScrollArea className="h-[calc(100vh-120px)] pr-4">
-              <div className="space-y-8">
-                {/* Avatar Section */}
-                <section>
-                  <div className="flex items-center gap-2 mb-4 text-primary">
-                    <User size={18} />
-                    <h3 className="font-semibold uppercase tracking-widest text-sm">Avatar</h3>
-                  </div>
-                  <div className="p-4 rounded-lg bg-white/5 border border-white/10 hover:border-primary/30 transition-colors">
-                    <Label htmlFor="avatar-upload" className="cursor-pointer block text-center p-4 border-2 border-dashed border-white/10 rounded hover:bg-white/5 transition-colors">
-                      <div className="flex flex-col items-center gap-2">
-                        <Upload size={24} className="text-gray-400" />
-                        <span className="text-sm font-medium">Upload .glb / .ply</span>
+          <SheetContent side="left" className="w-[320px] sm:w-[420px] border-r border-white/10 bg-black/95 backdrop-blur-2xl text-white p-0">
+            <div className="h-full flex flex-col">
+              <SheetHeader className="p-8 pb-4">
+                <SheetTitle className="text-3xl font-display font-bold text-white tracking-widest uppercase italic">
+                  Wardrobe
+                </SheetTitle>
+                <p className="text-gray-500 text-xs font-mono tracking-widest">PERSONALIZATION INTERFACE V.2</p>
+              </SheetHeader>
+              
+              <ScrollArea className="flex-1 px-8">
+                <div className="space-y-10 py-4">
+                  {/* Avatar Section */}
+                  <section className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-primary">
+                        <User size={20} />
+                        <h3 className="font-display text-lg font-bold uppercase tracking-widest">Base Body</h3>
                       </div>
-                      <Input 
-                        id="avatar-upload" 
-                        type="file" 
-                        accept=".glb,.gltf,.ply" 
-                        className="hidden" 
-                        onChange={(e) => handleFileUpload(e, 'avatar')}
-                      />
-                    </Label>
-                    {avatarUrl && (
-                      <div className="mt-3 text-xs text-green-400 flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                        Model Loaded
-                      </div>
-                    )}
-                  </div>
-                </section>
+                      {avatarUrl && <Check size={16} className="text-green-500" />}
+                    </div>
+                    
+                    <div className="group relative">
+                      <Label 
+                        htmlFor="avatar-upload" 
+                        className="flex flex-col items-center justify-center gap-4 h-32 border-2 border-dashed border-white/10 rounded-xl hover:border-primary/50 hover:bg-white/5 transition-all cursor-pointer group-hover:shadow-[0_0_20px_rgba(245,158,11,0.1)]"
+                      >
+                        <Upload size={28} className="text-gray-500 group-hover:text-primary transition-colors" />
+                        <div className="text-center">
+                          <span className="text-sm font-bold block">REPLACE AVATAR</span>
+                          <span className="text-[10px] text-gray-500 font-mono">GLB / PLY SUPPORTED</span>
+                        </div>
+                        <Input 
+                          id="avatar-upload" 
+                          type="file" 
+                          accept=".glb,.gltf,.ply" 
+                          className="hidden" 
+                          onChange={(e) => handleFileUpload(e, 'avatar')}
+                        />
+                      </Label>
+                    </div>
+                  </section>
 
-                <Separator className="bg-white/10" />
+                  <Separator className="bg-white/5" />
 
-                {/* Wearables Section */}
-                <section>
-                  <div className="flex items-center gap-2 mb-4 text-primary">
-                    <Box size={18} />
-                    <h3 className="font-semibold uppercase tracking-widest text-sm">Wearable</h3>
-                  </div>
-                  <div className="p-4 rounded-lg bg-white/5 border border-white/10 hover:border-primary/30 transition-colors">
-                     <Label htmlFor="wearable-upload" className="cursor-pointer block text-center p-4 border-2 border-dashed border-white/10 rounded hover:bg-white/5 transition-colors">
-                      <div className="flex flex-col items-center gap-2">
-                        <Upload size={24} className="text-gray-400" />
-                        <span className="text-sm font-medium">Upload .glb / .ply</span>
+                  {/* Wearables Section */}
+                  <section className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-primary">
+                        <Box size={20} />
+                        <h3 className="font-display text-lg font-bold uppercase tracking-widest">Equipable</h3>
                       </div>
-                      <Input 
-                        id="wearable-upload" 
-                        type="file" 
-                        accept=".glb,.gltf,.ply" 
-                        className="hidden" 
-                        onChange={(e) => handleFileUpload(e, 'wearable')}
-                      />
-                    </Label>
-                     {wearableUrl && (
-                      <div className="mt-3 text-xs text-green-400 flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                        Wearable Equipped
-                      </div>
-                    )}
-                  </div>
-                </section>
+                      {wearableUrl && <Check size={16} className="text-green-500" />}
+                    </div>
 
-                {/* Instructions */}
-                <div className="p-4 bg-blue-500/10 rounded-lg text-xs text-blue-200 border border-blue-500/20">
-                  <p className="font-bold mb-1">PRO TIP:</p>
-                  Use the joystick to rotate your character. Drag anywhere else to orbit the camera.
+                    <div className="group relative">
+                      <Label 
+                        htmlFor="wearable-upload" 
+                        className="flex flex-col items-center justify-center gap-4 h-32 border-2 border-dashed border-white/10 rounded-xl hover:border-primary/50 hover:bg-white/5 transition-all cursor-pointer group-hover:shadow-[0_0_20px_rgba(245,158,11,0.1)]"
+                      >
+                        <Upload size={28} className="text-gray-500 group-hover:text-primary transition-colors" />
+                        <div className="text-center">
+                          <span className="text-sm font-bold block">LOAD WEARABLE</span>
+                          <span className="text-[10px] text-gray-500 font-mono">GLB / PLY SUPPORTED</span>
+                        </div>
+                        <Input 
+                          id="wearable-upload" 
+                          type="file" 
+                          accept=".glb,.gltf,.ply" 
+                          className="hidden" 
+                          onChange={(e) => handleFileUpload(e, 'wearable')}
+                        />
+                      </Label>
+                    </div>
+                  </section>
+
+                  {/* Status Card */}
+                  <div className="mt-8 p-6 bg-primary/5 rounded-xl border border-primary/20 space-y-2">
+                    <div className="flex justify-between text-[10px] font-mono text-primary/60 italic">
+                      <span>SYNC STATUS</span>
+                      <span>ACTIVE</span>
+                    </div>
+                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-full w-2/3 bg-primary animate-pulse" />
+                    </div>
+                    <p className="text-[10px] text-gray-400 leading-relaxed font-mono mt-4 uppercase">
+                      Load your assets to visualize real-time fit and aesthetics.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </ScrollArea>
+              </ScrollArea>
+            </div>
           </SheetContent>
         </Sheet>
         
         {/* Title Overlay */}
         <div className="text-right">
-          <h1 className="text-3xl font-display font-bold text-white uppercase tracking-tighter">
-            System <span className="text-primary">V-01</span>
+          <h1 className="text-4xl font-display font-bold text-white uppercase tracking-tighter italic">
+            Visual <span className="text-primary">Fit</span>
           </h1>
-          <p className="text-xs text-gray-500 font-mono tracking-widest">VIRTUAL FITTING PROTOCOL</p>
+          <div className="flex items-center justify-end gap-2">
+            <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
+            <p className="text-[10px] text-gray-500 font-mono tracking-[0.2em] uppercase">Engine v2.5.0</p>
+          </div>
         </div>
       </div>
 
       {/* Footer / Controls */}
       <div className="flex justify-between items-end pointer-events-auto">
-        <div className="hidden md:block text-[10px] text-gray-600 font-mono">
-          COORD: {Math.random().toFixed(4)} / {Math.random().toFixed(4)}<br/>
-          STATUS: ONLINE
+        <div className="mb-4">
+          <div className="flex flex-col gap-1">
+            <div className="text-[10px] text-gray-500 font-mono uppercase tracking-widest">System Telemetry</div>
+            <div className="h-[1px] w-32 bg-white/10" />
+            <div className="text-[10px] text-primary font-mono tabular-nums uppercase">
+              R-VEL: {(Math.random() * 100).toFixed(2)}
+            </div>
+          </div>
         </div>
         
-        <div className="relative">
-          {/* Joystick Wrapper */}
-          <div className="bg-black/20 backdrop-blur-sm rounded-full p-2 border border-white/5">
+        <div className="relative group">
+          <div className="absolute -inset-4 bg-primary/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <div className="relative bg-black/40 backdrop-blur-xl rounded-full p-3 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
              <Joystick 
                 size={100} 
                 stickColor="hsl(35, 100%, 60%)" 
-                baseColor="rgba(0,0,0,0.5)" 
+                baseColor="rgba(255,255,255,0.03)" 
                 move={handleJoystickMove} 
                 stop={handleJoystickStop}
               />
           </div>
-          <div className="absolute -bottom-6 w-full text-center text-[10px] text-gray-400 font-mono uppercase tracking-widest">
-            Rotate
+          <div className="absolute -bottom-8 w-full text-center">
+            <span className="text-[10px] text-primary/60 font-mono uppercase tracking-[0.3em] font-bold">Rotation Axis</span>
           </div>
         </div>
       </div>
