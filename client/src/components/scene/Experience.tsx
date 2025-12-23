@@ -13,6 +13,8 @@ function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd }: {
   const setIsDraggingGlobal = useStore((state) => state.setIsDragging);
   const dragPoint = useRef(new THREE.Vector3());
   const previousDragPoint = useRef(new THREE.Vector3());
+  const planeRef = useRef(new THREE.Plane(new THREE.Vector3(0, 0, 1), 0));
+  const raycaster = useRef(new THREE.Raycaster());
   
   const scene = useMemo(() => {
     if (!gltf) return null;
@@ -30,16 +32,41 @@ function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd }: {
         setIsDragging(true);
         setIsDraggingGlobal(true);
         onDragStart?.();
+        
+        // Set up a plane parallel to camera for better dragging
+        const camera = e.camera;
+        const direction = new THREE.Vector3();
+        camera.getWorldDirection(direction);
+        planeRef.current.setFromNormalAndCoplanarPoint(
+          direction,
+          e.point
+        );
+        
         dragPoint.current.copy(e.point);
         previousDragPoint.current.copy(e.point);
       }}
       onPointerMove={(e) => {
         if (!isDragging || !draggable) return;
         e.stopPropagation();
-        dragPoint.current.copy(e.point);
-        const delta = new THREE.Vector3().subVectors(dragPoint.current, previousDragPoint.current);
-        onDragMove?.(delta);
-        previousDragPoint.current.copy(dragPoint.current);
+        
+        // Project pointer onto the drag plane
+        raycaster.current.setFromCamera(
+          new THREE.Vector2(
+            (e.pointer.x),
+            (e.pointer.y)
+          ),
+          e.camera
+        );
+        
+        const intersection = new THREE.Vector3();
+        raycaster.current.ray.intersectPlane(planeRef.current, intersection);
+        
+        if (intersection) {
+          dragPoint.current.copy(intersection);
+          const delta = new THREE.Vector3().subVectors(dragPoint.current, previousDragPoint.current);
+          onDragMove?.(delta);
+          previousDragPoint.current.copy(dragPoint.current);
+        }
       }}
       onPointerUp={(e) => {
         if (!draggable) return;
@@ -192,6 +219,7 @@ function SceneContent() {
 export default function Experience() {
   const orbitControlsRef = useRef<any>(null);
   const shouldResetCamera = useStore((state) => state.shouldResetCamera);
+  const isDragging = useStore((state) => state.isDragging);
 
   useEffect(() => {
     if (shouldResetCamera && orbitControlsRef.current) {
@@ -224,6 +252,7 @@ export default function Experience() {
           enableZoom={true}
           minDistance={3}
           maxDistance={10}
+          enabled={!isDragging}
         />
       </Canvas>
     </div>
