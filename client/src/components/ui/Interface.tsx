@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Joystick } from 'react-joystick-component';
 import { useStore } from '@/store';
-import { Shirt, User, Upload, Box, CheckCircle2 } from 'lucide-react';
+import { Shirt, User, Upload, Box, CheckCircle2, ChevronDown, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,18 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+
+import defaultObject from '@assets/object_0_1766404645511.glb?url';
+
+// Mock preview data
+const WEARABLE_ITEMS = [
+  {
+    id: 'default',
+    name: 'Default Wearable',
+    url: defaultObject,
+    isDefault: true
+  }
+];
 
 export default function Interface() {
   const { 
@@ -18,11 +30,13 @@ export default function Interface() {
     avatarUrl, 
     wearableUrl,
     hasUploadedAvatar,
-    hasUploadedWearable 
+    hasUploadedWearable,
+    resetCamera
   } = useStore();
   
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingWearable, setIsUploadingWearable] = useState(false);
+  const [openWearables, setOpenWearables] = useState(false);
 
   const handleJoystickMove = (event: any) => {
     if (event.x !== undefined) {
@@ -61,11 +75,16 @@ export default function Interface() {
     }, 800);
   };
 
+  const handleSelectWearable = (url: string | null) => {
+    setWearableUrl(url);
+    setOpenWearables(false);
+  };
+
   return (
     <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6">
       
       {/* Header / Nav */}
-      <div className="flex justify-between items-start pointer-events-auto">
+      <div className="flex justify-between items-start pointer-events-auto gap-4">
         <Sheet>
           <SheetTrigger asChild>
             <Button size="icon" variant="outline" className="rounded-full w-14 h-14 bg-black/80 backdrop-blur-2xl border-white/10 hover:bg-primary hover:text-primary-foreground transition-all duration-500 shadow-2xl group active:scale-95">
@@ -78,7 +97,7 @@ export default function Interface() {
                 <SheetTitle className="text-3xl font-display font-bold text-white tracking-widest uppercase italic">
                   Wardrobe
                 </SheetTitle>
-                <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">Control Panel v2.8.4</p>
+                <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">Control Panel v2.9.1</p>
               </SheetHeader>
               
               <ScrollArea className="flex-1 px-8">
@@ -127,6 +146,40 @@ export default function Interface() {
                       {hasUploadedWearable && !isUploadingWearable && <CheckCircle2 size={16} className="text-green-500" />}
                     </div>
 
+                    {/* Wearables Dropdown */}
+                    <div className="space-y-2">
+                      <button 
+                        onClick={() => setOpenWearables(!openWearables)}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/30 transition-all"
+                      >
+                        <span className="text-sm font-mono uppercase tracking-wider">Available Wearables</span>
+                        <ChevronDown size={16} className={`transition-transform ${openWearables ? 'rotate-180' : ''}`} />
+                      </button>
+                      
+                      {openWearables && (
+                        <div className="space-y-2 p-3 bg-white/5 rounded-lg border border-white/10">
+                          {WEARABLE_ITEMS.map((item) => (
+                            <button
+                              key={item.id}
+                              onClick={() => handleSelectWearable(item.url)}
+                              className={`w-full p-3 rounded-lg text-left text-sm transition-all border ${
+                                wearableUrl === item.url
+                                  ? 'bg-primary/20 border-primary/50'
+                                  : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/30'
+                              }`}
+                            >
+                              <div className="font-mono font-bold uppercase tracking-wider text-xs">
+                                {item.name}
+                              </div>
+                              <div className="text-[10px] text-gray-400 mt-1 font-mono">
+                                {item.isDefault ? 'DEFAULT PREVIEW' : 'CUSTOM'}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
                     <div className="group relative">
                       <Label 
                         htmlFor="wearable-upload" 
@@ -134,7 +187,7 @@ export default function Interface() {
                       >
                         <Upload size={32} className={`${isUploadingWearable ? 'text-primary' : 'text-gray-500'} transition-colors`} />
                         <div className="text-center">
-                          <span className="text-sm font-bold block">{isUploadingWearable ? 'PROCESSING...' : 'EQUIP WEARABLE'}</span>
+                          <span className="text-sm font-bold block">{isUploadingWearable ? 'PROCESSING...' : 'UPLOAD WEARABLE'}</span>
                           <span className="text-[10px] text-gray-500 font-mono">.GLB / .PLY SUPPORTED</span>
                         </div>
                         <Input 
@@ -170,9 +223,24 @@ export default function Interface() {
             </div>
           </SheetContent>
         </Sheet>
+
+        {/* Re-center Camera Button */}
+        <Button 
+          onClick={() => {
+            resetCamera();
+            toast.success("Scene re-centered", { 
+              icon: <Zap className="text-primary" size={16} />
+            });
+          }}
+          variant="outline" 
+          className="rounded-full h-14 px-6 bg-black/80 backdrop-blur-2xl border-white/10 hover:bg-primary hover:text-primary-foreground transition-all duration-500 shadow-2xl group active:scale-95 flex items-center gap-2"
+        >
+          <Zap className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-mono uppercase tracking-wider hidden sm:inline">Reset</span>
+        </Button>
         
         {/* HUD Overlay */}
-        <div className="text-right">
+        <div className="text-right flex-1">
           <h1 className="text-4xl font-display font-bold text-white uppercase tracking-tighter italic">
             Virtual <span className="text-primary">Fit</span>
           </h1>

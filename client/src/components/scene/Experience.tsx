@@ -1,15 +1,13 @@
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { Environment, Center, ContactShadows, OrbitControls, Html } from '@react-three/drei';
-import { Suspense, useRef, useMemo } from 'react';
+import { Suspense, useRef, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useStore } from '@/store';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 function Model({ url }: { url: string }) {
-  // Use useMemo to avoid reloading the loader every time
   const gltf = useLoader(GLTFLoader, url);
   
-  // Clone the scene to allow multiple instances and avoid mutation issues
   const scene = useMemo(() => {
     if (!gltf) return null;
     return gltf.scene.clone();
@@ -59,6 +57,16 @@ function SceneContent() {
 }
 
 export default function Experience() {
+  const orbitControlsRef = useRef<any>(null);
+  const shouldResetCamera = useStore((state) => state.shouldResetCamera);
+
+  useEffect(() => {
+    if (shouldResetCamera && orbitControlsRef.current) {
+      orbitControlsRef.current.reset();
+      useStore.setState({ shouldResetCamera: false });
+    }
+  }, [shouldResetCamera]);
+
   return (
     <div className="w-full h-full bg-gradient-to-b from-gray-950 via-black to-gray-950">
       <Canvas shadows camera={{ position: [0, 0, 5], fov: 40 }} gl={{ antialias: true }}>
@@ -76,6 +84,7 @@ export default function Experience() {
         <SceneContent />
         
         <OrbitControls 
+          ref={orbitControlsRef}
           enablePan={false} 
           minPolarAngle={Math.PI / 4} 
           maxPolarAngle={Math.PI / 1.8}

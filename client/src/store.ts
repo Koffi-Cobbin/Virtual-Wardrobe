@@ -10,18 +10,21 @@ interface AppState {
   rotationVelocity: number;
   hasUploadedAvatar: boolean;
   hasUploadedWearable: boolean;
+  shouldResetCamera: boolean;
   
   setAvatarUrl: (url: string | null, isUpload?: boolean) => void;
   setWearableUrl: (url: string | null, isUpload?: boolean) => void;
   setRotationVelocity: (velocity: number) => void;
+  resetCamera: () => void;
 }
 
 export const useStore = create<AppState>((set) => ({
   avatarUrl: defaultPerson,
-  wearableUrl: defaultObject,
+  wearableUrl: null,
   rotationVelocity: 0,
   hasUploadedAvatar: false,
   hasUploadedWearable: false,
+  shouldResetCamera: false,
   
   setAvatarUrl: (url, isUpload = false) => set({ 
     avatarUrl: url, 
@@ -32,4 +35,8 @@ export const useStore = create<AppState>((set) => ({
     hasUploadedWearable: isUpload 
   }),
   setRotationVelocity: (velocity) => set({ rotationVelocity: velocity }),
+  resetCamera: () => {
+    set({ shouldResetCamera: true });
+    setTimeout(() => set({ shouldResetCamera: false }), 100);
+  },
 }));
