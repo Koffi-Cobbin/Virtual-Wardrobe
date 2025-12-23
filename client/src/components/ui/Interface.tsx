@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Joystick } from 'react-joystick-component';
 import { useStore } from '@/store';
-import { Shirt, User, Upload, Box, CheckCircle2, ChevronDown, Zap } from 'lucide-react';
+import { Shirt, User, Upload, Box, CheckCircle2, Zap, Combine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,6 @@ import WearablePreview from './WearablePreview';
 
 import defaultObject from '@assets/object_0_1766404645511.glb?url';
 
-// Mock preview data
 const WEARABLE_ITEMS = [
   {
     id: 'default',
@@ -32,12 +31,13 @@ export default function Interface() {
     wearableUrl,
     hasUploadedAvatar,
     hasUploadedWearable,
-    resetCamera
+    resetCamera,
+    resetWearablePosition,
+    setShouldMerge
   } = useStore();
   
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingWearable, setIsUploadingWearable] = useState(false);
-  const [openWearables, setOpenWearables] = useState(false);
 
   const handleJoystickMove = (event: any) => {
     if (event.x !== undefined) {
@@ -80,6 +80,19 @@ export default function Interface() {
     setWearableUrl(url);
   };
 
+  const handleMergeMeshes = () => {
+    if (!avatarUrl || !wearableUrl) {
+      toast.error("Load both avatar and wearable first", {
+        description: "You need both models to merge"
+      });
+      return;
+    }
+    setShouldMerge(true);
+    toast.success("Models merged successfully", {
+      icon: <Combine className="text-primary" size={16} />
+    });
+  };
+
   return (
     <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6">
       
@@ -97,7 +110,7 @@ export default function Interface() {
                 <SheetTitle className="text-3xl font-display font-bold text-white tracking-widest uppercase italic">
                   Wardrobe
                 </SheetTitle>
-                <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">Control Panel v2.9.2</p>
+                <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">Control Panel v2.9.3</p>
               </SheetHeader>
               
               <ScrollArea className="flex-1 px-8">
@@ -197,6 +210,34 @@ export default function Interface() {
                     </div>
                   </section>
 
+                  <Separator className="bg-white/5" />
+
+                  {/* Controls Section */}
+                  <section className="space-y-3">
+                    <h3 className="font-display text-sm font-bold uppercase tracking-widest text-primary">Controls</h3>
+                    
+                    <Button 
+                      onClick={handleMergeMeshes}
+                      className="w-full bg-primary/20 hover:bg-primary/40 text-primary border border-primary/50 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
+                    >
+                      <Combine size={16} className="mr-2" />
+                      Merge Models
+                    </Button>
+
+                    <Button 
+                      onClick={() => {
+                        resetWearablePosition();
+                        toast.success("Wearable position reset", {
+                          icon: <Zap className="text-primary" size={16} />
+                        });
+                      }}
+                      className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
+                    >
+                      <Zap size={16} className="mr-2" />
+                      Reset Position
+                    </Button>
+                  </section>
+
                   {/* Telemetry Card */}
                   <div className="mt-8 p-6 bg-primary/5 rounded-2xl border border-primary/20 space-y-4 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
@@ -210,7 +251,7 @@ export default function Interface() {
                       </div>
                     </div>
                     <p className="text-[10px] text-gray-400 leading-relaxed font-mono uppercase tracking-tighter">
-                      Systems operational. Dynamic asset injection ready for deployment.
+                      Drag models in 3D space. Merge to combine geometry.
                     </p>
                   </div>
                 </div>
@@ -240,7 +281,7 @@ export default function Interface() {
             Virtual <span className="text-primary">Fit</span>
           </h1>
           <div className="flex items-center justify-end gap-2">
-            <p className="text-[10px] text-gray-600 font-mono tracking-[0.4em] uppercase">GRID-COORD: 42.7.99</p>
+            <p className="text-[10px] text-gray-600 font-mono tracking-[0.4em] uppercase">DRAG TO MOVE</p>
           </div>
         </div>
       </div>

@@ -1,12 +1,18 @@
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { Environment, Center, ContactShadows, OrbitControls, Html } from '@react-three/drei';
-import { Suspense, useRef, useMemo, useEffect } from 'react';
+import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { useStore } from '@/store';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-function Model({ url }: { url: string }) {
+function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd }: { url: string; draggable?: boolean; onDragStart?: () => void; onDragMove?: (delta: THREE.Vector3) => void; onDragEnd?: () => void }) {
   const gltf = useLoader(GLTFLoader, url);
+  const meshRef = useRef<THREE.Group>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragPlane = useRef(new THREE.Plane(new THREE.Vector3(0, 0, 1), 0));
+  const dragPoint = useRef(new THREE.Vector3());
+  const previousDragPoint = useRef(new THREE.Vector3());
   
   const scene = useMemo(() => {
     if (!gltf) return null;
@@ -14,32 +20,155 @@ function Model({ url }: { url: string }) {
   }, [gltf]);
 
   if (!scene) return null;
-  return <primitive object={scene} />;
+
+  return (
+    <group
+      ref={meshRef}
+      onPointerDown={(e) => {
+        if (!draggable) return;
+        e.stopPropagation();
+        setIsDragging(true);
+        onDragStart?.();
+        dragPoint.current.copy(e.point);
+        previousDragPoint.current.copy(e.point);
+      }}
+      onPointerMove={(e) => {
+        if (!isDragging || !draggable) return;
+        e.stopPropagation();
+        dragPoint.current.copy(e.point);
+        const delta = new THREE.Vector3().subVectors(dragPoint.current, previousDragPoint.current);
+        onDragMove?.(delta);
+        previousDragPoint.current.copy(dragPoint.current);
+      }}
+      onPointerUp={(e) => {
+        if (!draggable) return;
+        e.stopPropagation();
+        setIsDragging(false);
+        onDragEnd?.();
+      }}
+      onPointerLeave={() => {
+        if (isDragging) {
+          setIsDragging(false);
+          onDragEnd?.();
+        }
+      }}
+    >
+      <primitive object={scene} />
+    </group>
+  );
 }
 
 function SceneContent() {
   const avatarUrl = useStore((state) => state.avatarUrl);
   const wearableUrl = useStore((state) => state.wearableUrl);
   const rotationVelocity = useStore((state) => state.rotationVelocity);
+  const wearablePosition = useStore((state) => state.wearablePosition);
+  const setWearablePosition = useStore((state) => state.setWearablePosition);
+  const shouldMerge = useStore((state) => state.shouldMerge);
+  const setShouldMerge = useStore((state) => state.setShouldMerge);
 
-  const groupRef = useRef<THREE.Group>(null);
+  const avatarGroupRef = useRef<THREE.Group>(null);
+  const wearableGroupRef = useRef<THREE.Group>(null);
 
   useFrame((state, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += rotationVelocity * delta * 2.5; 
+    if (avatarGroupRef.current) {
+      avatarGroupRef.current.rotation.y += rotationVelocity * delta * 2.5;
     }
   });
+
+  // Merge meshes when requested
+  useEffect(() => {
+    if (shouldMerge && avatarGroupRef.current && wearableGroupRef.current) {
+      const avatarGeometries: THREE.BufferGeometry[] = [];
+      const avatarMaterials: THREE.Material[] = [];
+
+      // Collect all geometries from avatar
+      avatarGroupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          if (child.geometry) {
+            avatarGeometries.push(child.geometry);
+            if (child.material) {
+              const mat = Array.isArray(child.material) ? child.material[0] : child.material;
+              if (!avatarMaterials.includes(mat)) {
+                avatarMaterials.push(mat);
+              }
+            }
+          }
+        }
+      });
+
+      // Collect all geometries from wearable
+      const wearableGeometries: THREE.BufferGeometry[] = [];
+      wearableGroupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          if (child.geometry) {
+            wearableGeometries.push(child.geometry);
+            if (child.material) {
+              const mat = Array.isArray(child.material) ? child.material[0] : child.material;
+              if (!avatarMaterials.includes(mat)) {
+                avatarMaterials.push(mat);
+              }
+            }
+          }
+        }
+      });
+
+      // Merge all geometries
+      if (avatarGeometries.length > 0 && wearableGeometries.length > 0) {
+        const geometries = [...avatarGeometries, ...wearableGeometries];
+        
+        const combined = mergeGeometries(geometries);
+        if (combined) {
+          // Create a new mesh with the merged geometry
+          const mergedMesh = new THREE.Mesh(
+            combined,
+            avatarMaterials.length > 0 ? avatarMaterials[0] : new THREE.MeshPhongMaterial({ color: 0x888888 })
+          );
+          
+          // Hide original meshes
+          avatarGroupRef.current.visible = false;
+          wearableGroupRef.current.visible = false;
+          
+          // Add merged mesh to scene
+          if (avatarGroupRef.current.parent) {
+            mergedMesh.position.copy(avatarGroupRef.current.position);
+            avatarGroupRef.current.parent.add(mergedMesh);
+            mergedMesh.name = 'mergedModel';
+          }
+        }
+      }
+
+      setShouldMerge(false);
+    }
+  }, [shouldMerge]);
 
   return (
     <group position={[0, -1, 0]}>
       <Center top>
-        <group ref={groupRef}>
+        <group ref={avatarGroupRef}>
           <Suspense fallback={<Html center><div className="text-primary font-display font-bold animate-pulse text-lg">INITIALIZING AVATAR...</div></Html>}>
-            {avatarUrl && <Model url={avatarUrl} />}
+            {avatarUrl && <Model url={avatarUrl} draggable={true} />}
           </Suspense>
-          
+        </group>
+
+        <group 
+          ref={wearableGroupRef}
+          position={[wearablePosition.x, wearablePosition.y, wearablePosition.z]}
+        >
           <Suspense fallback={null}>
-            {wearableUrl && <Model url={wearableUrl} />}
+            {wearableUrl && (
+              <Model 
+                url={wearableUrl}
+                draggable={true}
+                onDragMove={(delta) => {
+                  setWearablePosition({
+                    x: wearablePosition.x + delta.x,
+                    y: wearablePosition.y + delta.y,
+                    z: wearablePosition.z + delta.z,
+                  });
+                }}
+              />
+            )}
           </Suspense>
         </group>
       </Center>
