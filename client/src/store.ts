@@ -18,6 +18,7 @@ interface AppState {
   shouldResetCamera: boolean;
   wearablePosition: Position;
   shouldMerge: boolean;
+  isDragging: boolean;
   
   setAvatarUrl: (url: string | null, isUpload?: boolean) => void;
   setWearableUrl: (url: string | null, isUpload?: boolean) => void;
@@ -26,6 +27,7 @@ interface AppState {
   setWearablePosition: (position: Position) => void;
   resetWearablePosition: () => void;
   setShouldMerge: (value: boolean) => void;
+  setIsDragging: (value: boolean) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -37,6 +39,7 @@ export const useStore = create<AppState>((set) => ({
   shouldResetCamera: false,
   wearablePosition: { x: 0, y: 0, z: 0 },
   shouldMerge: false,
+  isDragging: false,
   
   setAvatarUrl: (url, isUpload = false) => set({ 
     avatarUrl: url, 
@@ -55,4 +58,5 @@ export const useStore = create<AppState>((set) => ({
   setWearablePosition: (position) => set({ wearablePosition: position }),
   resetWearablePosition: () => set({ wearablePosition: { x: 0, y: 0, z: 0 } }),
   setShouldMerge: (value) => set({ shouldMerge: value }),
+  setIsDragging: (value) => set({ isDragging: value }),
 }));

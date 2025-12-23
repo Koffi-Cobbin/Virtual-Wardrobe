@@ -10,7 +10,7 @@ function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd }: {
   const gltf = useLoader(GLTFLoader, url);
   const meshRef = useRef<THREE.Group>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const dragPlane = useRef(new THREE.Plane(new THREE.Vector3(0, 0, 1), 0));
+  const setIsDraggingGlobal = useStore((state) => state.setIsDragging);
   const dragPoint = useRef(new THREE.Vector3());
   const previousDragPoint = useRef(new THREE.Vector3());
   
@@ -28,6 +28,7 @@ function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd }: {
         if (!draggable) return;
         e.stopPropagation();
         setIsDragging(true);
+        setIsDraggingGlobal(true);
         onDragStart?.();
         dragPoint.current.copy(e.point);
         previousDragPoint.current.copy(e.point);
@@ -44,11 +45,13 @@ function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd }: {
         if (!draggable) return;
         e.stopPropagation();
         setIsDragging(false);
+        setIsDraggingGlobal(false);
         onDragEnd?.();
       }}
       onPointerLeave={() => {
         if (isDragging) {
           setIsDragging(false);
+          setIsDraggingGlobal(false);
           onDragEnd?.();
         }
       }}
@@ -62,6 +65,7 @@ function SceneContent() {
   const avatarUrl = useStore((state) => state.avatarUrl);
   const wearableUrl = useStore((state) => state.wearableUrl);
   const rotationVelocity = useStore((state) => state.rotationVelocity);
+  const isDragging = useStore((state) => state.isDragging);
   const wearablePosition = useStore((state) => state.wearablePosition);
   const setWearablePosition = useStore((state) => state.setWearablePosition);
   const shouldMerge = useStore((state) => state.shouldMerge);
@@ -71,7 +75,7 @@ function SceneContent() {
   const wearableGroupRef = useRef<THREE.Group>(null);
 
   useFrame((state, delta) => {
-    if (avatarGroupRef.current) {
+    if (avatarGroupRef.current && !isDragging) {
       avatarGroupRef.current.rotation.y += rotationVelocity * delta * 2.5;
     }
   });
