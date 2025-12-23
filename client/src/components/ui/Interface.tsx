@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import WearablePreview from './WearablePreview';
 
 import defaultObject from '@assets/object_0_1766404645511.glb?url';
 
@@ -77,7 +78,6 @@ export default function Interface() {
 
   const handleSelectWearable = (url: string | null) => {
     setWearableUrl(url);
-    setOpenWearables(false);
   };
 
   return (
@@ -97,7 +97,7 @@ export default function Interface() {
                 <SheetTitle className="text-3xl font-display font-bold text-white tracking-widest uppercase italic">
                   Wardrobe
                 </SheetTitle>
-                <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">Control Panel v2.9.1</p>
+                <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">Control Panel v2.9.2</p>
               </SheetHeader>
               
               <ScrollArea className="flex-1 px-8">
@@ -146,41 +146,36 @@ export default function Interface() {
                       {hasUploadedWearable && !isUploadingWearable && <CheckCircle2 size={16} className="text-green-500" />}
                     </div>
 
-                    {/* Wearables Dropdown */}
-                    <div className="space-y-2">
-                      <button 
-                        onClick={() => setOpenWearables(!openWearables)}
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/30 transition-all"
-                      >
-                        <span className="text-sm font-mono uppercase tracking-wider">Available Wearables</span>
-                        <ChevronDown size={16} className={`transition-transform ${openWearables ? 'rotate-180' : ''}`} />
-                      </button>
-                      
-                      {openWearables && (
-                        <div className="space-y-2 p-3 bg-white/5 rounded-lg border border-white/10">
-                          {WEARABLE_ITEMS.map((item) => (
-                            <button
-                              key={item.id}
-                              onClick={() => handleSelectWearable(item.url)}
-                              className={`w-full p-3 rounded-lg text-left text-sm transition-all border ${
-                                wearableUrl === item.url
-                                  ? 'bg-primary/20 border-primary/50'
-                                  : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/30'
-                              }`}
-                            >
-                              <div className="font-mono font-bold uppercase tracking-wider text-xs">
+                    {/* Wearables Preview Gallery */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-gray-500">
+                        Available Items
+                      </div>
+                      <div className="grid grid-cols-1 gap-2">
+                        {WEARABLE_ITEMS.map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => handleSelectWearable(item.url)}
+                            className="text-left transition-all group"
+                          >
+                            <WearablePreview 
+                              url={item.url}
+                              isSelected={wearableUrl === item.url}
+                            />
+                            <div className="mt-2">
+                              <div className="font-mono font-bold uppercase tracking-wider text-xs group-hover:text-primary transition-colors">
                                 {item.name}
                               </div>
-                              <div className="text-[10px] text-gray-400 mt-1 font-mono">
+                              <div className="text-[10px] text-gray-400 font-mono">
                                 {item.isDefault ? 'DEFAULT PREVIEW' : 'CUSTOM'}
                               </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="group relative">
+                    <div className="group relative pt-2">
                       <Label 
                         htmlFor="wearable-upload" 
                         className={`flex flex-col items-center justify-center gap-4 h-36 border-2 border-dashed rounded-2xl transition-all cursor-pointer ${isUploadingWearable ? 'border-primary bg-primary/10 animate-pulse' : 'border-white/10 hover:border-primary/50 hover:bg-white/5'}`}
