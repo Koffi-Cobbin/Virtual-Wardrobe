@@ -6,7 +6,7 @@ import { useStore } from '@/store';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd, onLoad }: { url: string; draggable?: boolean; onDragStart?: () => void; onDragMove?: (delta: THREE.Vector3) => void; onDragEnd?: () => void; onLoad?: (scene: THREE.Group) => void }) {
+function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd }: { url: string; draggable?: boolean; onDragStart?: () => void; onDragMove?: (delta: THREE.Vector3) => void; onDragEnd?: () => void }) {
   const gltf = useLoader(GLTFLoader, url);
   const meshRef = useRef<THREE.Group>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -18,9 +18,7 @@ function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd, onL
   
   const scene = useMemo(() => {
     if (!gltf) return null;
-    const clonedScene = gltf.scene.clone();
-    onLoad?.(clonedScene);
-    return clonedScene;
+    return gltf.scene.clone();
   }, [gltf]);
 
   if (!scene) return null;
@@ -102,9 +100,6 @@ function SceneContent() {
 
   const avatarGroupRef = useRef<THREE.Group>(null);
   const wearableGroupRef = useRef<THREE.Group>(null);
-  const mergedGroupRef = useRef<THREE.Group>(null);
-  const avatarSceneRef = useRef<THREE.Group | null>(null);
-  const wearableSceneRef = useRef<THREE.Group | null>(null);
 
   useFrame((state, delta) => {
     if (avatarGroupRef.current && !isDragging) {
@@ -112,69 +107,69 @@ function SceneContent() {
     }
   });
 
-  const handleAvatarLoad = (scene: THREE.Group) => {
-    avatarSceneRef.current = scene;
-  };
-
-  const handleWearableLoad = (scene: THREE.Group) => {
-    wearableSceneRef.current = scene;
-  };
-
   // Merge meshes when requested
   useEffect(() => {
-    if (shouldMerge && avatarSceneRef.current && wearableSceneRef.current && avatarGroupRef.current) {
-      try {
-        const geometries: THREE.BufferGeometry[] = [];
-        const materials: THREE.Material[] = [];
+    if (shouldMerge && avatarGroupRef.current && wearableGroupRef.current) {
+      const avatarGeometries: THREE.BufferGeometry[] = [];
+      const avatarMaterials: THREE.Material[] = [];
 
-        // Collect geometries from avatar
-        avatarSceneRef.current.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.geometry) {
-            geometries.push(child.geometry);
-            if (child.material && !materials.includes(child.material)) {
-              materials.push(child.material);
+      // Collect all geometries from avatar
+      avatarGroupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          if (child.geometry) {
+            avatarGeometries.push(child.geometry);
+            if (child.material) {
+              const mat = Array.isArray(child.material) ? child.material[0] : child.material;
+              if (!avatarMaterials.includes(mat)) {
+                avatarMaterials.push(mat);
+              }
             }
           }
-        });
-
-        // Collect geometries from wearable
-        wearableSceneRef.current.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.geometry) {
-            geometries.push(child.geometry);
-            if (child.material && !materials.includes(child.material)) {
-              materials.push(child.material);
-            }
-          }
-        });
-
-        if (geometries.length > 0) {
-          const combined = mergeGeometries(geometries);
-          const material = materials.length > 0 ? materials[0] : new THREE.MeshPhongMaterial({ color: 0x888888 });
-          const mergedMesh = new THREE.Mesh(combined, material);
-
-          // Hide original groups
-          avatarGroupRef.current.visible = false;
-          if (wearableGroupRef.current) {
-            wearableGroupRef.current.visible = false;
-          }
-
-          // Clear merged group if it exists
-          if (mergedGroupRef.current) {
-            mergedGroupRef.current.clear();
-          } else {
-            mergedGroupRef.current = new THREE.Group();
-            avatarGroupRef.current.parent?.add(mergedGroupRef.current);
-          }
-
-          mergedGroupRef.current.add(mergedMesh);
-          mergedGroupRef.current.visible = true;
         }
+      });
 
-        setShouldMerge(false);
-      } catch (error) {
-        console.error('Error merging models:', error);
-        setShouldMerge(false);
+      // Collect all geometries from wearable
+      const wearableGeometries: THREE.BufferGeometry[] = [];
+      wearableGroupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          if (child.geometry) {
+            wearableGeometries.push(child.geometry);
+            if (child.material) {
+              const mat = Array.isArray(child.material) ? child.material[0] : child.material;
+              if (!avatarMaterials.includes(mat)) {
+                avatarMaterials.push(mat);
+              }
+            }
+          }
+        }
+      });
+
+      // Merge all geometries
+      if (avatarGeometries.length > 0 && wearableGeometries.length > 0) {
+        const geometries = [...avatarGeometries, ...wearableGeometries];
+        
+        const combined = mergeGeometries(geometries);
+        if (combined) {
+          // Create a new mesh with the merged geometry
+          const mergedMesh = new THREE.Mesh(
+            combined,
+            avatarMaterials.length > 0 ? avatarMaterials[0] : new THREE.MeshPhongMaterial({ color: 0x888888 })
+          );
+          
+          // Hide original meshes
+          avatarGroupRef.current.visible = false;
+          wearableGroupRef.current.visible = false;
+          
+          // Add merged mesh to scene
+          if (avatarGroupRef.current.parent) {
+            mergedMesh.position.copy(avatarGroupRef.current.position);
+            avatarGroupRef.current.parent.add(mergedMesh);
+            mergedMesh.name = 'mergedModel';
+          }
+        }
       }
+
+      setShouldMerge(false);
     }
   }, [shouldMerge]);
 
@@ -183,7 +178,7 @@ function SceneContent() {
       <Center top>
         <group ref={avatarGroupRef}>
           <Suspense fallback={<Html center><div className="text-primary font-display font-bold animate-pulse text-lg">INITIALIZING AVATAR...</div></Html>}>
-            {avatarUrl && <Model url={avatarUrl} draggable={true} onLoad={handleAvatarLoad} />}
+            {avatarUrl && <Model url={avatarUrl} draggable={true} />}
           </Suspense>
         </group>
 
@@ -196,7 +191,6 @@ function SceneContent() {
               <Model 
                 url={wearableUrl}
                 draggable={true}
-                onLoad={handleWearableLoad}
                 onDragMove={(delta) => {
                   setWearablePosition({
                     x: wearablePosition.x + delta.x,
@@ -208,9 +202,6 @@ function SceneContent() {
             )}
           </Suspense>
         </group>
-
-        {/* Merged model group */}
-        <group ref={mergedGroupRef} />
       </Center>
       
       <ContactShadows 
