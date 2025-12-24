@@ -19,6 +19,8 @@ interface AppState {
   wearablePosition: Position;
   shouldMerge: boolean;
   isDragging: boolean;
+  isMerged: boolean;
+  mergedModelUrl: string | null;
   
   setAvatarUrl: (url: string | null, isUpload?: boolean) => void;
   setWearableUrl: (url: string | null, isUpload?: boolean) => void;
@@ -28,6 +30,9 @@ interface AppState {
   resetWearablePosition: () => void;
   setShouldMerge: (value: boolean) => void;
   setIsDragging: (value: boolean) => void;
+  setIsMerged: (value: boolean) => void;
+  setMergedModelUrl: (url: string | null) => void;
+  unmerge: () => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -40,6 +45,8 @@ export const useStore = create<AppState>((set) => ({
   wearablePosition: { x: 0, y: 0, z: 0 },
   shouldMerge: false,
   isDragging: false,
+  isMerged: false,
+  mergedModelUrl: null,
   
   setAvatarUrl: (url, isUpload = false) => set({ 
     avatarUrl: url, 
@@ -59,4 +66,11 @@ export const useStore = create<AppState>((set) => ({
   resetWearablePosition: () => set({ wearablePosition: { x: 0, y: 0, z: 0 } }),
   setShouldMerge: (value) => set({ shouldMerge: value }),
   setIsDragging: (value) => set({ isDragging: value }),
+  setIsMerged: (value) => set({ isMerged: value }),
+  setMergedModelUrl: (url) => set({ mergedModelUrl: url }),
+  unmerge: () => set({ 
+    isMerged: false, 
+    mergedModelUrl: null,
+    wearablePosition: { x: 0, y: 0, z: 0 }
+  }),
 }));

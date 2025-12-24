@@ -33,7 +33,9 @@ export default function Interface() {
     hasUploadedWearable,
     resetCamera,
     resetWearablePosition,
-    setShouldMerge
+    setShouldMerge,
+    isMerged,
+    unmerge
   } = useStore();
   
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -87,9 +89,28 @@ export default function Interface() {
       });
       return;
     }
+    if (isMerged) {
+      toast.error("Models are already merged", {
+        description: "Use unmerge to separate them first"
+      });
+      return;
+    }
     setShouldMerge(true);
-    toast.success("Models merged successfully", {
+    toast.success("Merging models...", {
       icon: <Combine className="text-primary" size={16} />
+    });
+  };
+
+  const handleUnmergeMeshes = () => {
+    if (!isMerged) {
+      toast.error("Models are not merged", {
+        description: "Merge them first to unmerge"
+      });
+      return;
+    }
+    unmerge();
+    toast.success("Models separated successfully", {
+      icon: <Zap className="text-primary" size={16} />
     });
   };
 
@@ -216,13 +237,24 @@ export default function Interface() {
                   <section className="space-y-3">
                     <h3 className="font-display text-sm font-bold uppercase tracking-widest text-primary">Controls</h3>
                     
-                    <Button 
-                      onClick={handleMergeMeshes}
-                      className="w-full bg-primary/20 hover:bg-primary/40 text-primary border border-primary/50 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
-                    >
-                      <Combine size={16} className="mr-2" />
-                      Merge Models
-                    </Button>
+                    {!isMerged ? (
+                      <Button 
+                        onClick={handleMergeMeshes}
+                        className="w-full bg-primary/20 hover:bg-primary/40 text-primary border border-primary/50 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
+                        disabled={!avatarUrl || !wearableUrl}
+                      >
+                        <Combine size={16} className="mr-2" />
+                        Merge Models
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={handleUnmergeMeshes}
+                        className="w-full bg-red-500/20 hover:bg-red-500/40 text-red-500 border border-red-500/50 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
+                      >
+                        <Combine size={16} className="mr-2" />
+                        Unmerge Models
+                      </Button>
+                    )}
 
                     <Button 
                       onClick={() => {
@@ -232,6 +264,7 @@ export default function Interface() {
                         });
                       }}
                       className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
+                      disabled={isMerged}
                     >
                       <Zap size={16} className="mr-2" />
                       Reset Position
@@ -243,15 +276,20 @@ export default function Interface() {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
                     <div className="flex justify-between text-[10px] font-mono text-primary italic relative">
                       <span>SYNC ENGINE</span>
-                      <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping"/> ONLINE</span>
+                      <span className="flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping"/> 
+                        {isMerged ? 'MERGED' : 'ONLINE'}
+                      </span>
                     </div>
                     <div className="space-y-1">
                       <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full w-[85%] bg-primary" />
+                        <div className={`h-full transition-all ${isMerged ? 'w-full bg-green-500' : 'w-[85%] bg-primary'}`} />
                       </div>
                     </div>
                     <p className="text-[10px] text-gray-400 leading-relaxed font-mono uppercase tracking-tighter">
-                      Drag models in 3D space. Merge to combine geometry.
+                      {isMerged 
+                        ? 'Models merged into single geometry. Unmerge to edit separately.'
+                        : 'Drag models in 3D space. Merge to combine geometry.'}
                     </p>
                   </div>
                 </div>
