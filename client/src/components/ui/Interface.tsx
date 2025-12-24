@@ -237,25 +237,6 @@ export default function Interface() {
                   <section className="space-y-3">
                     <h3 className="font-display text-sm font-bold uppercase tracking-widest text-primary">Controls</h3>
                     
-                    {!isMerged ? (
-                      <Button 
-                        onClick={handleMergeMeshes}
-                        className="w-full bg-primary/20 hover:bg-primary/40 text-primary border border-primary/50 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
-                        disabled={!avatarUrl || !wearableUrl}
-                      >
-                        <Combine size={16} className="mr-2" />
-                        Merge Models
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={handleUnmergeMeshes}
-                        className="w-full bg-red-500/20 hover:bg-red-500/40 text-red-500 border border-red-500/50 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
-                      >
-                        <Combine size={16} className="mr-2" />
-                        Unmerge Models
-                      </Button>
-                    )}
-
                     <Button 
                       onClick={() => {
                         resetWearablePosition();
@@ -327,17 +308,24 @@ export default function Interface() {
       {/* Footer Controls */}
       <div className="flex justify-between items-end pointer-events-auto">
         <div className="mb-4">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-8 bg-primary/20 rounded-full overflow-hidden">
-                <div className="w-full h-1/2 bg-primary animate-bounce" />
-              </div>
-              <div className="text-[10px] text-gray-500 font-mono uppercase tracking-[0.2em]">Signal Strength</div>
-            </div>
-            <div className="text-[10px] text-primary/40 font-mono tabular-nums uppercase">
-              Lat: 22ms | Fr: 60fps
-            </div>
-          </div>
+          {!isMerged ? (
+            <Button 
+              onClick={handleMergeMeshes}
+              className="bg-primary/20 hover:bg-primary/40 text-primary border border-primary/50 rounded-xl h-14 px-6 font-mono uppercase tracking-wider text-sm transition-all backdrop-blur-2xl shadow-2xl active:scale-95"
+              disabled={!avatarUrl || !wearableUrl}
+            >
+              <Combine size={20} className="mr-2" />
+              Merge Models
+            </Button>
+          ) : (
+            <Button 
+              onClick={handleUnmergeMeshes}
+              className="bg-red-500/20 hover:bg-red-500/40 text-red-500 border border-red-500/50 rounded-xl h-14 px-6 font-mono uppercase tracking-wider text-sm transition-all backdrop-blur-2xl shadow-2xl active:scale-95"
+            >
+              <Combine size={20} className="mr-2" />
+              Unmerge Models
+            </Button>
+          )}
         </div>
         
         <div className="relative group p-4">
