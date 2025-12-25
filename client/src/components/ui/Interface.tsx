@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Joystick } from 'react-joystick-component';
 import { useStore } from '@/store';
 import { Shirt, User, Upload, Box, CheckCircle2, Zap, Combine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,16 +39,6 @@ export default function Interface() {
   
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingWearable, setIsUploadingWearable] = useState(false);
-
-  const handleJoystickMove = (event: any) => {
-    if (event.x !== undefined) {
-      setRotationVelocity(event.x);
-    }
-  };
-
-  const handleJoystickStop = () => {
-    setRotationVelocity(0);
-  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'wearable') => {
     const file = event.target.files?.[0];
@@ -306,7 +295,7 @@ export default function Interface() {
       </div>
 
       {/* Footer Controls */}
-      <div className="flex justify-between items-end pointer-events-auto">
+      <div className="flex justify-end items-end pointer-events-auto">
         <div className="mb-4">
           {!isMerged ? (
             <Button 
@@ -326,22 +315,6 @@ export default function Interface() {
               Unmerge Models
             </Button>
           )}
-        </div>
-        
-        <div className="relative group p-4">
-          <div className="absolute inset-0 bg-primary/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-          <div className="relative bg-black/60 backdrop-blur-2xl rounded-full p-4 border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)] ring-1 ring-white/5">
-             <Joystick 
-                size={110} 
-                stickColor="hsl(35, 100%, 60%)" 
-                baseColor="rgba(255,255,255,0.02)" 
-                move={handleJoystickMove} 
-                stop={handleJoystickStop}
-              />
-          </div>
-          <div className="absolute -bottom-8 w-full text-center">
-            <span className="text-[10px] text-primary/40 font-mono uppercase tracking-[0.5em] font-black group-hover:text-primary transition-colors">Orbit Engine</span>
-          </div>
         </div>
       </div>
     </div>

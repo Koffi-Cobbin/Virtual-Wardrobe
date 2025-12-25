@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { Environment, Center, ContactShadows, OrbitControls, Html } from '@react-three/drei';
+import { Environment, ContactShadows, OrbitControls, Html } from '@react-three/drei';
 import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { useStore } from '@/store';
@@ -102,11 +102,50 @@ function SceneContent() {
   const wearableGroupRef = useRef<THREE.Group>(null);
   const mergedMeshRef = useRef<THREE.Mesh | null>(null);
   const containerRef = useRef<THREE.Group>(null);
+  const centerOffset = useRef(new THREE.Vector3());
+
+  // Calculate and center the bounding box only when models change
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const recalculateCenter = () => {
+      const box = new THREE.Box3();
+      const center = new THREE.Vector3();
+
+      // Update world matrices before calculating bounds
+      containerRef.current!.updateMatrixWorld(true);
+      
+      box.setFromObject(containerRef.current!);
+      box.getCenter(center);
+      
+      // Store the center offset
+      centerOffset.current.copy(center);
+      
+      // Offset the container to center it
+      containerRef.current!.position.set(-center.x, -center.y, -center.z);
+    };
+
+    // Initial calculation with a slight delay to ensure models are loaded
+    const timer = setTimeout(recalculateCenter, 150);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [avatarUrl, wearableUrl, isMerged]);
 
   useFrame((state, delta) => {
     if (!isDragging && containerRef.current) {
-      // Rotate the entire container around its own center
+      // Save current position
+      const currentPos = containerRef.current.position.clone();
+      
+      // Reset position to apply rotation around world center
+      containerRef.current.position.set(0, 0, 0);
+      
+      // Rotate around world center (0,0,0)
       containerRef.current.rotation.y += rotationVelocity * delta * 2.5;
+      
+      // Reapply the centering offset
+      containerRef.current.position.copy(currentPos);
     }
   });
 
@@ -247,37 +286,35 @@ function SceneContent() {
   }, [isMerged]);
 
   return (
-    <group position={[0, -1, 0]}>
-      <Center top>
-        <group ref={containerRef}>
-          <group ref={avatarGroupRef}>
-            <Suspense fallback={<Html center><div className="text-primary font-display font-bold animate-pulse text-lg">INITIALIZING AVATAR...</div></Html>}>
-              {avatarUrl && <Model url={avatarUrl} draggable={!isMerged} />}
-            </Suspense>
-          </group>
-
-          <group 
-            ref={wearableGroupRef}
-            position={[wearablePosition.x, wearablePosition.y, wearablePosition.z]}
-          >
-            <Suspense fallback={null}>
-              {wearableUrl && (
-                <Model 
-                  url={wearableUrl}
-                  draggable={!isMerged}
-                  onDragMove={(delta) => {
-                    setWearablePosition({
-                      x: wearablePosition.x + delta.x,
-                      y: wearablePosition.y + delta.y,
-                      z: wearablePosition.z + delta.z,
-                    });
-                  }}
-                />
-              )}
-            </Suspense>
-          </group>
+    <group>
+      <group ref={containerRef}>
+        <group ref={avatarGroupRef}>
+          <Suspense fallback={<Html center><div className="text-primary font-display font-bold animate-pulse text-lg">INITIALIZING AVATAR...</div></Html>}>
+            {avatarUrl && <Model url={avatarUrl} draggable={!isMerged} />}
+          </Suspense>
         </group>
-      </Center>
+
+        <group 
+          ref={wearableGroupRef}
+          position={[wearablePosition.x, wearablePosition.y, wearablePosition.z]}
+        >
+          <Suspense fallback={null}>
+            {wearableUrl && (
+              <Model 
+                url={wearableUrl}
+                draggable={!isMerged}
+                onDragMove={(delta) => {
+                  setWearablePosition({
+                    x: wearablePosition.x + delta.x,
+                    y: wearablePosition.y + delta.y,
+                    z: wearablePosition.z + delta.z,
+                  });
+                }}
+              />
+            )}
+          </Suspense>
+        </group>
+      </group>
       
       <ContactShadows 
         opacity={0.4} 
@@ -285,7 +322,8 @@ function SceneContent() {
         blur={2} 
         far={10} 
         resolution={512} 
-        color="#000000" 
+        color="#000000"
+        position={[0, -1, 0]}
       />
     </group>
   );
@@ -328,6 +366,7 @@ export default function Experience() {
           minDistance={3}
           maxDistance={10}
           enabled={!isDragging}
+          target={[0, 0, 0]}
         />
       </Canvas>
     </div>
