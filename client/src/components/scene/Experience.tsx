@@ -4,6 +4,7 @@ import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { useStore } from '@/store';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { toast } from 'sonner';
 
@@ -16,22 +17,53 @@ function Model({
   url: string; 
   onLoad?: (scene: THREE.Group) => void 
 }) {
-  const gltf = useLoader(GLTFLoader, url);
+  const isPly = url.toLowerCase().includes('.ply') || url.startsWith('blob:') && url.includes('type=application/octet-stream'); // Fallback for some blob detections
+  
+  // Custom detection for blobs since URL might not have extension
+  const [actualIsPly, setActualIsPly] = useState(isPly);
+  
+  useEffect(() => {
+    if (url.startsWith('blob:')) {
+      fetch(url, { method: 'HEAD' }).then(res => {
+        const type = res.headers.get('content-type');
+        if (type?.includes('ply')) setActualIsPly(true);
+      }).catch(() => {});
+    }
+  }, [url]);
+
+  const gltf = useLoader(GLTFLoader, !actualIsPly ? url : '');
+  const plyGeometry = useLoader(PLYLoader, actualIsPly ? url : '');
+  
   const selectedObjectId = useStore((state) => state.selectedObjectId);
   const setSelectedObjectId = useStore((state) => state.setSelectedObjectId);
   
   const scene = useMemo(() => {
-    if (!gltf) return null;
-    const clonedScene = gltf.scene.clone();
+    let result: THREE.Group | null = null;
+
+    if (actualIsPly && plyGeometry) {
+      const material = new THREE.MeshStandardMaterial({ 
+        color: 0x888888, 
+        roughness: 0.5, 
+        metalness: 0.5,
+        vertexColors: plyGeometry.hasAttribute('color')
+      });
+      const mesh = new THREE.Mesh(plyGeometry, material);
+      result = new THREE.Group();
+      result.add(mesh);
+    } else if (gltf) {
+      result = gltf.scene.clone();
+    }
+
+    if (!result) return null;
     
-    // Automatically center the group visually without touching geometry (to keep skinning)
-    const box = new THREE.Box3().setFromObject(clonedScene);
+    // Automatically center the group visually
+    const box = new THREE.Box3().setFromObject(result);
     const center = box.getCenter(new THREE.Vector3());
-    clonedScene.position.sub(center);
+    result.position.sub(center);
     
-    onLoad?.(clonedScene);
-    return clonedScene;
-  }, [gltf]);
+    onLoad?.(result);
+    return result;
+  }, [gltf, plyGeometry, actualIsPly]);
 
   if (!scene) return null;
 
