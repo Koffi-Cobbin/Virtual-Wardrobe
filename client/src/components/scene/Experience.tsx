@@ -180,6 +180,7 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
           <TransformControls 
             object={wearableGroupRef.current} 
             mode="translate"
+            size={1.2}
             onMouseDown={() => setControlsEnabled(false)}
             onMouseUp={() => setControlsEnabled(true)}
             onChange={() => {
@@ -192,6 +193,7 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
           <TransformControls 
             object={wearableGroupRef.current} 
             mode="rotate"
+            size={0.8}
             onMouseDown={() => setControlsEnabled(false)}
             onMouseUp={() => setControlsEnabled(true)}
           />
