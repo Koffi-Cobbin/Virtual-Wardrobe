@@ -1,4 +1,4 @@
-import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { Environment, Center, ContactShadows, OrbitControls, Html, TransformControls } from '@react-three/drei';
 import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
@@ -39,9 +39,9 @@ function Model({
     >
       <primitive object={scene} />
       {isSelected && (
-        <mesh scale={1.1}>
-          <boxGeometry args={[1, 1, 1]} />
-          <meshBasicMaterial color="#f59e0b" wireframe transparent opacity={0.1} />
+        <mesh>
+          <boxGeometry args={[1, 2, 1]} />
+          <meshBasicMaterial color="#f59e0b" wireframe transparent opacity={0.2} />
         </mesh>
       )}
     </group>
@@ -133,10 +133,7 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
   }, [shouldMerge]);
 
   return (
-    <group 
-      position={[0, -1, 0]} 
-      onPointerMissed={() => setSelectedObjectId(null)}
-    >
+    <group position={[0, -1, 0]}>
       <Center top>
         <group ref={avatarGroupRef}>
           <Suspense fallback={<Html center><div className="text-primary font-display font-bold animate-pulse text-lg">INITIALIZING AVATAR...</div></Html>}>
@@ -159,41 +156,33 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
           </Suspense>
         </group>
 
-        {selectedObjectId === 'wearable' && wearableGroupRef.current && (
-          <TransformControls 
-            object={wearableGroupRef.current} 
-            mode="translate"
-            onMouseDown={() => setControlsEnabled(false)}
-            onMouseUp={() => setControlsEnabled(true)}
-            onChange={() => {
-              if (wearableGroupRef.current) {
-                const pos = wearableGroupRef.current.position;
-                setWearablePosition({ x: pos.x, y: pos.y, z: pos.z });
-              }
-            }}
-          />
-        )}
-        
-        {selectedObjectId === 'avatar' && avatarGroupRef.current && (
-          <TransformControls 
-            object={avatarGroupRef.current} 
-            mode="rotate"
-            onMouseDown={() => setControlsEnabled(false)}
-            onMouseUp={() => setControlsEnabled(true)}
-          />
-        )}
-
         <group ref={mergedGroupRef} />
       </Center>
+
+      {/* Handlers moved outside Center to avoid offset issues */}
+      {selectedObjectId === 'wearable' && wearableGroupRef.current && (
+        <TransformControls 
+          object={wearableGroupRef.current} 
+          mode="translate"
+          onMouseDown={() => setControlsEnabled(false)}
+          onMouseUp={() => setControlsEnabled(true)}
+          onChange={() => {
+            if (wearableGroupRef.current) {
+              const pos = wearableGroupRef.current.position;
+              setWearablePosition({ x: pos.x, y: pos.y, z: pos.z });
+            }
+          }}
+        />
+      )}
       
-      <ContactShadows 
-        opacity={0.4} 
-        scale={15} 
-        blur={2} 
-        far={10} 
-        resolution={512} 
-        color="#000000" 
-      />
+      {selectedObjectId === 'avatar' && avatarGroupRef.current && (
+        <TransformControls 
+          object={avatarGroupRef.current} 
+          mode="rotate"
+          onMouseDown={() => setControlsEnabled(false)}
+          onMouseUp={() => setControlsEnabled(true)}
+        />
+      )}
     </group>
   );
 }
@@ -201,6 +190,7 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
 export default function Experience() {
   const orbitControlsRef = useRef<any>(null);
   const shouldResetCamera = useStore((state) => state.shouldResetCamera);
+  const setSelectedObjectId = useStore((state) => state.setSelectedObjectId);
   const [controlsEnabled, setControlsEnabled] = useState(true);
 
   useEffect(() => {
@@ -212,7 +202,12 @@ export default function Experience() {
 
   return (
     <div className="w-full h-full bg-gradient-to-b from-gray-950 via-black to-gray-950">
-      <Canvas shadows camera={{ position: [0, 0, 5], fov: 40 }} gl={{ antialias: true }}>
+      <Canvas 
+        shadows 
+        camera={{ position: [0, 0, 5], fov: 40 }} 
+        gl={{ antialias: true }}
+        onPointerMissed={() => setSelectedObjectId(null)}
+      >
         <fog attach="fog" args={['#050505', 8, 20]} />
         <ambientLight intensity={0.8} />
         <directionalLight 
