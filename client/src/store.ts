@@ -19,8 +19,7 @@ interface AppState {
   wearablePosition: Position;
   shouldMerge: boolean;
   isDragging: boolean;
-  isMerged: boolean;
-  mergedModelUrl: string | null;
+  selectedObjectId: string | null;
   
   setAvatarUrl: (url: string | null, isUpload?: boolean) => void;
   setWearableUrl: (url: string | null, isUpload?: boolean) => void;
@@ -30,9 +29,7 @@ interface AppState {
   resetWearablePosition: () => void;
   setShouldMerge: (value: boolean) => void;
   setIsDragging: (value: boolean) => void;
-  setIsMerged: (value: boolean) => void;
-  setMergedModelUrl: (url: string | null) => void;
-  unmerge: () => void;
+  setSelectedObjectId: (id: string | null) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -45,8 +42,7 @@ export const useStore = create<AppState>((set) => ({
   wearablePosition: { x: 0, y: 0, z: 0 },
   shouldMerge: false,
   isDragging: false,
-  isMerged: false,
-  mergedModelUrl: null,
+  selectedObjectId: null,
   
   setAvatarUrl: (url, isUpload = false) => set({ 
     avatarUrl: url, 
@@ -55,7 +51,8 @@ export const useStore = create<AppState>((set) => ({
   setWearableUrl: (url, isUpload = false) => set({ 
     wearableUrl: url, 
     hasUploadedWearable: isUpload,
-    wearablePosition: { x: 0, y: 0, z: 0 }
+    wearablePosition: { x: 0, y: 0, z: 0 },
+    selectedObjectId: null
   }),
   setRotationVelocity: (velocity) => set({ rotationVelocity: velocity }),
   resetCamera: () => {
@@ -66,11 +63,5 @@ export const useStore = create<AppState>((set) => ({
   resetWearablePosition: () => set({ wearablePosition: { x: 0, y: 0, z: 0 } }),
   setShouldMerge: (value) => set({ shouldMerge: value }),
   setIsDragging: (value) => set({ isDragging: value }),
-  setIsMerged: (value) => set({ isMerged: value }),
-  setMergedModelUrl: (url) => set({ mergedModelUrl: url }),
-  unmerge: () => set({ 
-    isMerged: false, 
-    mergedModelUrl: null,
-    wearablePosition: { x: 0, y: 0, z: 0 }
-  }),
+  setSelectedObjectId: (id) => set({ selectedObjectId: id }),
 }));
