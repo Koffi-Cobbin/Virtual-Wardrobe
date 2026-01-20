@@ -64,6 +64,8 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
   const setWearablePosition = useStore((state) => state.setWearablePosition);
   const shouldMerge = useStore((state) => state.shouldMerge);
   const setShouldMerge = useStore((state) => state.setShouldMerge);
+  const setIsMerged = useStore((state) => state.setIsMerged);
+  const isMerged = useStore((state) => state.isMerged);
 
   const avatarGroupRef = useRef<THREE.Group>(null);
   const wearableGroupRef = useRef<THREE.Group>(null);
@@ -128,6 +130,7 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
 
           mergedGroupRef.current.add(mergedMesh);
           mergedGroupRef.current.visible = true;
+          setIsMerged(true);
         }
 
         setShouldMerge(false);
@@ -137,6 +140,17 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
       }
     }
   }, [shouldMerge]);
+
+  useEffect(() => {
+    if (!isMerged && avatarGroupRef.current && wearableGroupRef.current) {
+      avatarGroupRef.current.visible = true;
+      wearableGroupRef.current.visible = !!wearableUrl;
+      if (mergedGroupRef.current) {
+        mergedGroupRef.current.visible = false;
+        mergedGroupRef.current.clear();
+      }
+    }
+  }, [isMerged, wearableUrl]);
 
   return (
     <group position={[0, 0, 0]}>

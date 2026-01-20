@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '@/store';
-import { Shirt, User, Upload, Box, CheckCircle2, Zap, Combine } from 'lucide-react';
+import { Shirt, User, Upload, Box, CheckCircle2, Zap, Combine, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,6 +26,7 @@ export default function Interface() {
     setRotationVelocity, 
     setAvatarUrl, 
     setWearableUrl, 
+    removeWearable,
     avatarUrl, 
     wearableUrl,
     hasUploadedAvatar,
@@ -100,6 +101,13 @@ export default function Interface() {
     unmerge();
     toast.success("Models separated successfully", {
       icon: <Zap className="text-primary" size={16} />
+    });
+  };
+
+  const handleRemoveWearable = () => {
+    removeWearable();
+    toast.success("Wearable removed successfully", {
+      icon: <Trash2 className="text-red-500" size={16} />
     });
   };
 
@@ -226,6 +234,16 @@ export default function Interface() {
                   <section className="space-y-3">
                     <h3 className="font-display text-sm font-bold uppercase tracking-widest text-primary">Controls</h3>
                     
+                    {wearableUrl && !isMerged && (
+                      <Button 
+                        onClick={handleRemoveWearable}
+                        className="w-full bg-red-500/20 hover:bg-red-500/40 text-red-500 border border-red-500/50 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
+                      >
+                        <Trash2 size={16} className="mr-2" />
+                        Remove Wearable
+                      </Button>
+                    )}
+
                     <Button 
                       onClick={() => {
                         resetWearablePosition();
@@ -234,7 +252,7 @@ export default function Interface() {
                         });
                       }}
                       className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
-                      disabled={isMerged}
+                      disabled={isMerged || !wearableUrl}
                     >
                       <Zap size={16} className="mr-2" />
                       Reset Position
