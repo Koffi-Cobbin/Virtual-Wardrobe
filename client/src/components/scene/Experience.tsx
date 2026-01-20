@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { Environment, Center, ContactShadows, OrbitControls, Html, TransformControls } from '@react-three/drei';
+import { Environment, ContactShadows, OrbitControls, Html, TransformControls } from '@react-three/drei';
 import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { useStore } from '@/store';
@@ -22,6 +22,12 @@ function Model({
   const scene = useMemo(() => {
     if (!gltf) return null;
     const clonedScene = gltf.scene.clone();
+    
+    // Automatically center the group visually without touching geometry (to keep skinning)
+    const box = new THREE.Box3().setFromObject(clonedScene);
+    const center = box.getCenter(new THREE.Vector3());
+    clonedScene.position.sub(center);
+    
     onLoad?.(clonedScene);
     return clonedScene;
   }, [gltf]);
@@ -133,33 +139,28 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
   }, [shouldMerge]);
 
   return (
-    <group position={[0, -1, 0]}>
-      <Center top>
-        <group ref={avatarGroupRef}>
-          <Suspense fallback={<Html center><div className="text-primary font-display font-bold animate-pulse text-lg">INITIALIZING AVATAR...</div></Html>}>
-            {avatarUrl && <Model id="avatar" url={avatarUrl} onLoad={handleAvatarLoad} />}
-          </Suspense>
-        </group>
+    <group position={[0, 0, 0]}>
+      <group ref={avatarGroupRef} position={[0, 0, 0]}>
+        <Suspense fallback={<Html center><div className="text-primary font-display font-bold animate-pulse text-lg">INITIALIZING AVATAR...</div></Html>}>
+          {avatarUrl && <Model id="avatar" url={avatarUrl} onLoad={handleAvatarLoad} />}
+        </Suspense>
+      </group>
 
-        <group 
-          ref={wearableGroupRef}
-          position={[wearablePosition.x, wearablePosition.y, wearablePosition.z]}
-        >
-          <Suspense fallback={null}>
-            {wearableUrl && (
-              <Model 
-                id="wearable"
-                url={wearableUrl}
-                onLoad={handleWearableLoad}
-              />
-            )}
-          </Suspense>
-        </group>
+      <group 
+        ref={wearableGroupRef}
+        position={[wearablePosition.x, wearablePosition.y, wearablePosition.z]}
+      >
+        <Suspense fallback={null}>
+          {wearableUrl && (
+            <Model 
+              id="wearable"
+              url={wearableUrl}
+              onLoad={handleWearableLoad}
+            />
+          )}
+        </Suspense>
+      </group>
 
-        <group ref={mergedGroupRef} />
-      </Center>
-
-      {/* Handlers moved outside Center to avoid offset issues */}
       {selectedObjectId === 'wearable' && wearableGroupRef.current && (
         <TransformControls 
           object={wearableGroupRef.current} 
@@ -183,6 +184,18 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
           onMouseUp={() => setControlsEnabled(true)}
         />
       )}
+
+      <group ref={mergedGroupRef} />
+      
+      <ContactShadows 
+        opacity={0.4} 
+        scale={15} 
+        blur={2} 
+        far={10} 
+        resolution={512} 
+        color="#000000" 
+        position={[0, -1.5, 0]}
+      />
     </group>
   );
 }
