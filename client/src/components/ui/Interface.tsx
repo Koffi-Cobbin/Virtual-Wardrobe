@@ -49,7 +49,11 @@ export default function Interface() {
     else setIsUploadingWearable(true);
 
     setTimeout(() => {
-      const url = URL.createObjectURL(file);
+      // Create a blob URL with the correct extension for the loader to recognize
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      const blob = new Blob([file], { type: file.type });
+      const url = URL.createObjectURL(blob) + `?ext=.${extension}`;
+      
       if (type === 'avatar') {
         setAvatarUrl(url, true);
         setIsUploadingAvatar(false);

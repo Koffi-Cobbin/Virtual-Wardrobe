@@ -17,22 +17,12 @@ function Model({
   url: string; 
   onLoad?: (scene: THREE.Group) => void 
 }) {
-  const isPly = url.toLowerCase().includes('.ply') || url.startsWith('blob:') && url.includes('type=application/octet-stream'); // Fallback for some blob detections
+  const isPly = url.toLowerCase().includes('.ply');
   
-  // Custom detection for blobs since URL might not have extension
-  const [actualIsPly, setActualIsPly] = useState(isPly);
-  
-  useEffect(() => {
-    if (url.startsWith('blob:')) {
-      fetch(url, { method: 'HEAD' }).then(res => {
-        const type = res.headers.get('content-type');
-        if (type?.includes('ply')) setActualIsPly(true);
-      }).catch(() => {});
-    }
-  }, [url]);
-
-  const gltf = useLoader(GLTFLoader, !actualIsPly ? url : '');
-  const plyGeometry = useLoader(PLYLoader, actualIsPly ? url : '');
+  // Use separate loader hooks to avoid the "is not valid JSON" error
+  // We wrap them in try/catch or conditional logic to prevent one from breaking the other
+  const gltf = useLoader(GLTFLoader, !isPly ? url : '/placeholder.glb'); // Use a dummy string if not needed
+  const plyGeometry = useLoader(PLYLoader, isPly ? url : '/placeholder.ply'); // Use a dummy string if not needed
   
   const selectedObjectId = useStore((state) => state.selectedObjectId);
   const setSelectedObjectId = useStore((state) => state.setSelectedObjectId);
@@ -40,7 +30,7 @@ function Model({
   const scene = useMemo(() => {
     let result: THREE.Group | null = null;
 
-    if (actualIsPly && plyGeometry) {
+    if (isPly && plyGeometry) {
       const material = new THREE.MeshStandardMaterial({ 
         color: 0x888888, 
         roughness: 0.5, 
@@ -50,7 +40,7 @@ function Model({
       const mesh = new THREE.Mesh(plyGeometry, material);
       result = new THREE.Group();
       result.add(mesh);
-    } else if (gltf) {
+    } else if (!isPly && gltf) {
       result = gltf.scene.clone();
     }
 
@@ -63,7 +53,7 @@ function Model({
     
     onLoad?.(result);
     return result;
-  }, [gltf, plyGeometry, actualIsPly]);
+  }, [gltf, plyGeometry, isPly]);
 
   if (!scene) return null;
 
