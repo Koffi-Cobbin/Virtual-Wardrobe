@@ -1,24 +1,32 @@
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { Environment, ContactShadows, OrbitControls, Html } from '@react-three/drei';
+import { Environment, Center, ContactShadows, OrbitControls, Html } from '@react-three/drei';
 import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { useStore } from '@/store';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd }: { url: string; draggable?: boolean; onDragStart?: () => void; onDragMove?: (delta: THREE.Vector3) => void; onDragEnd?: () => void }) {
+function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd, onLoad }: { url: string; draggable?: boolean; onDragStart?: () => void; onDragMove?: (delta: THREE.Vector3) => void; onDragEnd?: () => void; onLoad?: (scene: THREE.Group) => void }) {
   const gltf = useLoader(GLTFLoader, url);
   const meshRef = useRef<THREE.Group>(null);
   const [isDragging, setIsDragging] = useState(false);
   const setIsDraggingGlobal = useStore((state) => state.setIsDragging);
   const dragPoint = useRef(new THREE.Vector3());
   const previousDragPoint = useRef(new THREE.Vector3());
-  const planeRef = useRef(new THREE.Plane(new THREE.Vector3(0, 0, 1), 0));
-  const raycaster = useRef(new THREE.Raycaster());
   
   const scene = useMemo(() => {
     if (!gltf) return null;
-    return gltf.scene.clone();
+    const clonedScene = gltf.scene.clone();
+    
+    // Ensure all geometries are centered so rotation happens around the visual center
+    clonedScene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.geometry.center();
+      }
+    });
+
+    onLoad?.(clonedScene);
+    return clonedScene;
   }, [gltf]);
 
   if (!scene) return null;
@@ -32,39 +40,16 @@ function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd }: {
         setIsDragging(true);
         setIsDraggingGlobal(true);
         onDragStart?.();
-        
-        const camera = e.camera;
-        const direction = new THREE.Vector3();
-        camera.getWorldDirection(direction);
-        planeRef.current.setFromNormalAndCoplanarPoint(
-          direction,
-          e.point
-        );
-        
         dragPoint.current.copy(e.point);
         previousDragPoint.current.copy(e.point);
       }}
       onPointerMove={(e) => {
         if (!isDragging || !draggable) return;
         e.stopPropagation();
-        
-        raycaster.current.setFromCamera(
-          new THREE.Vector2(
-            (e.pointer.x),
-            (e.pointer.y)
-          ),
-          e.camera
-        );
-        
-        const intersection = new THREE.Vector3();
-        raycaster.current.ray.intersectPlane(planeRef.current, intersection);
-        
-        if (intersection) {
-          dragPoint.current.copy(intersection);
-          const delta = new THREE.Vector3().subVectors(dragPoint.current, previousDragPoint.current);
-          onDragMove?.(delta);
-          previousDragPoint.current.copy(dragPoint.current);
-        }
+        dragPoint.current.copy(e.point);
+        const delta = new THREE.Vector3().subVectors(dragPoint.current, previousDragPoint.current);
+        onDragMove?.(delta);
+        previousDragPoint.current.copy(dragPoint.current);
       }}
       onPointerUp={(e) => {
         if (!draggable) return;
@@ -95,202 +80,98 @@ function SceneContent() {
   const setWearablePosition = useStore((state) => state.setWearablePosition);
   const shouldMerge = useStore((state) => state.shouldMerge);
   const setShouldMerge = useStore((state) => state.setShouldMerge);
-  const isMerged = useStore((state) => state.isMerged);
-  const setIsMerged = useStore((state) => state.setIsMerged);
 
   const avatarGroupRef = useRef<THREE.Group>(null);
   const wearableGroupRef = useRef<THREE.Group>(null);
-  const mergedMeshRef = useRef<THREE.Mesh | null>(null);
-  const containerRef = useRef<THREE.Group>(null);
-  const centerOffset = useRef(new THREE.Vector3());
+  const mergedGroupRef = useRef<THREE.Group>(null);
+  const avatarSceneRef = useRef<THREE.Group | null>(null);
+  const wearableSceneRef = useRef<THREE.Group | null>(null);
 
-  // Calculate and center the bounding box only when models change
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const recalculateCenter = () => {
-      const box = new THREE.Box3();
-      const center = new THREE.Vector3();
-
-      // Update world matrices before calculating bounds
-      containerRef.current!.updateMatrixWorld(true);
-      
-      box.setFromObject(containerRef.current!);
-      box.getCenter(center);
-      
-      // Store the center offset
-      centerOffset.current.copy(center);
-      
-      // Offset the container to center it
-      containerRef.current!.position.set(-center.x, -center.y, -center.z);
-    };
-
-    // Initial calculation with a slight delay to ensure models are loaded
-    const timer = setTimeout(recalculateCenter, 150);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [avatarUrl, wearableUrl, isMerged]);
+  // For trackball-like smooth quaternion rotation
+  const quaternion = useRef(new THREE.Quaternion());
 
   useFrame((state, delta) => {
-    if (!isDragging && containerRef.current) {
-      // Save current position
-      const currentPos = containerRef.current.position.clone();
+    if (avatarGroupRef.current && !isDragging) {
+      // 1. Apply a base rotation based on velocity (spinning on own axis)
+      // Use quaternion for free 360 rotation in any direction
+      // For now we keep horizontal rotation but could easily add X/Y with a 2D velocity
+      const stepRotation = new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(0, 1, 0),
+        rotationVelocity * delta * 2.5
+      );
       
-      // Reset position to apply rotation around world center
-      containerRef.current.position.set(0, 0, 0);
-      
-      // Rotate around world center (0,0,0)
-      containerRef.current.rotation.y += rotationVelocity * delta * 2.5;
-      
-      // Reapply the centering offset
-      containerRef.current.position.copy(currentPos);
+      quaternion.current.multiplyQuaternions(stepRotation, quaternion.current);
+      avatarGroupRef.current.quaternion.copy(quaternion.current);
     }
   });
 
-  // Merge meshes when requested
+  const handleAvatarLoad = (scene: THREE.Group) => {
+    avatarSceneRef.current = scene;
+  };
+
+  const handleWearableLoad = (scene: THREE.Group) => {
+    wearableSceneRef.current = scene;
+  };
+
   useEffect(() => {
-    if (shouldMerge && avatarGroupRef.current && wearableGroupRef.current && !isMerged) {
+    if (shouldMerge && avatarSceneRef.current && wearableSceneRef.current && avatarGroupRef.current) {
       try {
-        const geometriesToMerge: THREE.BufferGeometry[] = [];
-        let firstMaterial: THREE.Material | null = null;
-        let hasUV = false;
-        let hasNormal = false;
+        const geometries: THREE.BufferGeometry[] = [];
+        const materials: THREE.Material[] = [];
 
-        // First pass: check what attributes exist
-        avatarGroupRef.current.traverse((child) => {
+        avatarSceneRef.current.traverse((child) => {
           if (child instanceof THREE.Mesh && child.geometry) {
-            if (child.geometry.attributes.uv) hasUV = true;
-            if (child.geometry.attributes.normal) hasNormal = true;
-          }
-        });
-        wearableGroupRef.current.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.geometry) {
-            if (child.geometry.attributes.uv) hasUV = true;
-            if (child.geometry.attributes.normal) hasNormal = true;
-          }
-        });
-
-        // Collect geometries from avatar with world transforms
-        avatarGroupRef.current.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.geometry) {
-            const geometry = child.geometry.clone();
-            child.updateWorldMatrix(true, false);
-            geometry.applyMatrix4(child.matrixWorld);
-            
-            // Normalize attributes
-            if (hasUV && !geometry.attributes.uv) {
-              const vertexCount = geometry.attributes.position.count;
-              const uvArray = new Float32Array(vertexCount * 2);
-              geometry.setAttribute('uv', new THREE.BufferAttribute(uvArray, 2));
-            }
-            if (hasNormal && !geometry.attributes.normal) {
-              geometry.computeVertexNormals();
-            }
-            
-            geometriesToMerge.push(geometry);
-            
-            if (!firstMaterial && child.material) {
-              firstMaterial = Array.isArray(child.material) ? child.material[0] : child.material;
+            geometries.push(child.geometry);
+            if (child.material && !materials.includes(child.material)) {
+              materials.push(child.material);
             }
           }
         });
 
-        // Collect geometries from wearable with world transforms
-        wearableGroupRef.current.traverse((child) => {
+        wearableSceneRef.current.traverse((child) => {
           if (child instanceof THREE.Mesh && child.geometry) {
-            const geometry = child.geometry.clone();
-            child.updateWorldMatrix(true, false);
-            geometry.applyMatrix4(child.matrixWorld);
-            
-            // Normalize attributes
-            if (hasUV && !geometry.attributes.uv) {
-              const vertexCount = geometry.attributes.position.count;
-              const uvArray = new Float32Array(vertexCount * 2);
-              geometry.setAttribute('uv', new THREE.BufferAttribute(uvArray, 2));
-            }
-            if (hasNormal && !geometry.attributes.normal) {
-              geometry.computeVertexNormals();
-            }
-            
-            geometriesToMerge.push(geometry);
-            
-            if (!firstMaterial && child.material) {
-              firstMaterial = Array.isArray(child.material) ? child.material[0] : child.material;
+            geometries.push(child.geometry);
+            if (child.material && !materials.includes(child.material)) {
+              materials.push(child.material);
             }
           }
         });
 
-        if (geometriesToMerge.length > 0) {
-          const mergedGeometry = mergeGeometries(geometriesToMerge, false);
-          
-          if (mergedGeometry) {
-            // Create merged mesh
-            const material = firstMaterial || new THREE.MeshStandardMaterial({ color: 0x888888 });
-            const mergedMesh = new THREE.Mesh(mergedGeometry, material);
-            mergedMesh.name = 'mergedModel';
-            
-            // Add to container
-            if (containerRef.current) {
-              containerRef.current.add(mergedMesh);
-              mergedMeshRef.current = mergedMesh;
-            }
-            
-            // Hide original meshes
-            avatarGroupRef.current.visible = false;
+        if (geometries.length > 0) {
+          const combined = mergeGeometries(geometries);
+          const material = materials.length > 0 ? materials[0] : new THREE.MeshPhongMaterial({ color: 0x888888 });
+          const mergedMesh = new THREE.Mesh(combined, material);
+
+          avatarGroupRef.current.visible = false;
+          if (wearableGroupRef.current) {
             wearableGroupRef.current.visible = false;
-            
-            // Update state
-            setIsMerged(true);
-            console.log('Merge successful');
           }
+
+          if (mergedGroupRef.current) {
+            mergedGroupRef.current.clear();
+          } else {
+            mergedGroupRef.current = new THREE.Group();
+            avatarGroupRef.current.parent?.add(mergedGroupRef.current);
+          }
+
+          mergedGroupRef.current.add(mergedMesh);
+          mergedGroupRef.current.visible = true;
         }
 
-        // Clean up cloned geometries
-        geometriesToMerge.forEach(geo => geo.dispose());
-        
+        setShouldMerge(false);
       } catch (error) {
-        console.error('Merge failed:', error);
+        console.error('Error merging models:', error);
+        setShouldMerge(false);
       }
-      
-      setShouldMerge(false);
     }
-  }, [shouldMerge, isMerged, setIsMerged, setShouldMerge]);
-
-  // Unmerge effect
-  useEffect(() => {
-    if (!isMerged && mergedMeshRef.current) {
-      // Remove and cleanup merged mesh
-      if (containerRef.current && mergedMeshRef.current.parent) {
-        containerRef.current.remove(mergedMeshRef.current);
-      }
-      
-      // Dispose geometry and material
-      if (mergedMeshRef.current.geometry) {
-        mergedMeshRef.current.geometry.dispose();
-      }
-      
-      mergedMeshRef.current = null;
-      
-      // Show original meshes
-      if (avatarGroupRef.current) {
-        avatarGroupRef.current.visible = true;
-      }
-      if (wearableGroupRef.current) {
-        wearableGroupRef.current.visible = true;
-      }
-      
-      console.log('Unmerge successful');
-    }
-  }, [isMerged]);
+  }, [shouldMerge]);
 
   return (
-    <group>
-      <group ref={containerRef}>
+    <group position={[0, -1, 0]}>
+      <Center top>
         <group ref={avatarGroupRef}>
           <Suspense fallback={<Html center><div className="text-primary font-display font-bold animate-pulse text-lg">INITIALIZING AVATAR...</div></Html>}>
-            {avatarUrl && <Model url={avatarUrl} draggable={!isMerged} />}
+            {avatarUrl && <Model url={avatarUrl} draggable={true} onLoad={handleAvatarLoad} />}
           </Suspense>
         </group>
 
@@ -302,7 +183,8 @@ function SceneContent() {
             {wearableUrl && (
               <Model 
                 url={wearableUrl}
-                draggable={!isMerged}
+                draggable={true}
+                onLoad={handleWearableLoad}
                 onDragMove={(delta) => {
                   setWearablePosition({
                     x: wearablePosition.x + delta.x,
@@ -314,7 +196,9 @@ function SceneContent() {
             )}
           </Suspense>
         </group>
-      </group>
+
+        <group ref={mergedGroupRef} />
+      </Center>
       
       <ContactShadows 
         opacity={0.4} 
@@ -322,8 +206,7 @@ function SceneContent() {
         blur={2} 
         far={10} 
         resolution={512} 
-        color="#000000"
-        position={[0, -1, 0]}
+        color="#000000" 
       />
     </group>
   );
@@ -332,7 +215,6 @@ function SceneContent() {
 export default function Experience() {
   const orbitControlsRef = useRef<any>(null);
   const shouldResetCamera = useStore((state) => state.shouldResetCamera);
-  const isDragging = useStore((state) => state.isDragging);
 
   useEffect(() => {
     if (shouldResetCamera && orbitControlsRef.current) {
@@ -357,16 +239,16 @@ export default function Experience() {
         
         <SceneContent />
         
+        {/* OrbitControls disabled rotating the world, focus on Avatar rotating itself */}
         <OrbitControls 
           ref={orbitControlsRef}
+          enableRotate={true}
           enablePan={false} 
-          minPolarAngle={Math.PI / 4} 
-          maxPolarAngle={Math.PI / 1.8}
+          minPolarAngle={0} 
+          maxPolarAngle={Math.PI}
           enableZoom={true}
           minDistance={3}
           maxDistance={10}
-          enabled={!isDragging}
-          target={[0, 0, 0]}
         />
       </Canvas>
     </div>
