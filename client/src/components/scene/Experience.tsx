@@ -162,18 +162,26 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
       </group>
 
       {selectedObjectId === 'wearable' && wearableGroupRef.current && (
-        <TransformControls 
-          object={wearableGroupRef.current} 
-          mode="translate"
-          onMouseDown={() => setControlsEnabled(false)}
-          onMouseUp={() => setControlsEnabled(true)}
-          onChange={() => {
-            if (wearableGroupRef.current) {
-              const pos = wearableGroupRef.current.position;
-              setWearablePosition({ x: pos.x, y: pos.y, z: pos.z });
-            }
-          }}
-        />
+        <>
+          <TransformControls 
+            object={wearableGroupRef.current} 
+            mode="translate"
+            onMouseDown={() => setControlsEnabled(false)}
+            onMouseUp={() => setControlsEnabled(true)}
+            onChange={() => {
+              if (wearableGroupRef.current) {
+                const pos = wearableGroupRef.current.position;
+                setWearablePosition({ x: pos.x, y: pos.y, z: pos.z });
+              }
+            }}
+          />
+          <TransformControls 
+            object={wearableGroupRef.current} 
+            mode="rotate"
+            onMouseDown={() => setControlsEnabled(false)}
+            onMouseUp={() => setControlsEnabled(true)}
+          />
+        </>
       )}
       
       {selectedObjectId === 'avatar' && avatarGroupRef.current && (
