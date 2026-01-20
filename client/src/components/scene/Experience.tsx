@@ -88,38 +88,44 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
   };
 
   useEffect(() => {
-    if (shouldMerge && avatarSceneRef.current && wearableSceneRef.current && avatarGroupRef.current) {
+    if (shouldMerge && avatarSceneRef.current && wearableSceneRef.current && avatarGroupRef.current && wearableGroupRef.current) {
       try {
         const geometries: THREE.BufferGeometry[] = [];
-        const materials: THREE.Material[] = [];
+        
+        // Ensure matrices are up to date
+        avatarGroupRef.current.updateMatrixWorld(true);
+        wearableGroupRef.current.updateMatrixWorld(true);
 
-        avatarSceneRef.current.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.geometry) {
-            geometries.push(child.geometry);
-            if (child.material && !materials.includes(child.material)) {
-              materials.push(child.material);
+        const processObject = (obj: THREE.Object3D) => {
+          obj.traverse((child) => {
+            if (child instanceof THREE.Mesh && child.geometry) {
+              const clone = child.geometry.clone();
+              // Apply the world transform of this specific mesh relative to the scene root
+              // Since we want the merged mesh at world origin [0,0,0]
+              child.updateMatrixWorld(true);
+              clone.applyMatrix4(child.matrixWorld);
+              geometries.push(clone);
             }
-          }
-        });
+          });
+        };
 
-        wearableSceneRef.current.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.geometry) {
-            geometries.push(child.geometry);
-            if (child.material && !materials.includes(child.material)) {
-              materials.push(child.material);
-            }
-          }
-        });
+        processObject(avatarGroupRef.current);
+        processObject(wearableGroupRef.current);
 
         if (geometries.length > 0) {
           const combined = mergeGeometries(geometries);
-          const material = materials.length > 0 ? materials[0] : new THREE.MeshPhongMaterial({ color: 0x888888 });
+          // Use a neutral but high-quality material for the prototype merge
+          const material = new THREE.MeshStandardMaterial({ 
+            color: 0xcccccc,
+            roughness: 0.3,
+            metalness: 0.2
+          });
           const mergedMesh = new THREE.Mesh(combined, material);
+          mergedMesh.castShadow = true;
+          mergedMesh.receiveShadow = true;
 
           avatarGroupRef.current.visible = false;
-          if (wearableGroupRef.current) {
-            wearableGroupRef.current.visible = false;
-          }
+          wearableGroupRef.current.visible = false;
 
           if (mergedGroupRef.current) {
             mergedGroupRef.current.clear();
@@ -137,6 +143,9 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
       } catch (error) {
         console.error('Error merging models:', error);
         setShouldMerge(false);
+        toast.error("Merge failed", {
+          description: "Technical error during geometry combination."
+        });
       }
     }
   }, [shouldMerge]);
