@@ -18,13 +18,6 @@ function Model({ url, draggable = false, onDragStart, onDragMove, onDragEnd, onL
     if (!gltf) return null;
     const clonedScene = gltf.scene.clone();
     
-    // Ensure all geometries are centered so rotation happens around the visual center
-    clonedScene.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.geometry.center();
-      }
-    });
-
     onLoad?.(clonedScene);
     return clonedScene;
   }, [gltf]);
