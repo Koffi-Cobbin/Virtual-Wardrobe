@@ -1,10 +1,9 @@
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Environment, ContactShadows, OrbitControls, Html, TransformControls } from '@react-three/drei';
 import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { useStore } from '@/store';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { toast } from 'sonner';
 
@@ -17,45 +16,93 @@ function Model({
   url: string; 
   onLoad?: (scene: THREE.Group) => void 
 }) {
-  const isPly = url.toLowerCase().includes('.ply');
-  
-  // Use separate loader hooks to avoid the "is not valid JSON" error
-  // We wrap them in try/catch or conditional logic to prevent one from breaking the other
-  const gltf = useLoader(GLTFLoader, !isPly ? url : '/placeholder.glb'); // Use a dummy string if not needed
-  const plyGeometry = useLoader(PLYLoader, isPly ? url : '/placeholder.ply'); // Use a dummy string if not needed
+  const [modelScene, setModelScene] = useState<THREE.Group | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   const selectedObjectId = useStore((state) => state.selectedObjectId);
   const setSelectedObjectId = useStore((state) => state.setSelectedObjectId);
   
-  const scene = useMemo(() => {
-    let result: THREE.Group | null = null;
-
-    if (isPly && plyGeometry) {
-      const material = new THREE.MeshStandardMaterial({ 
-        color: 0x888888, 
-        roughness: 0.5, 
-        metalness: 0.5,
-        vertexColors: plyGeometry.hasAttribute('color')
-      });
-      const mesh = new THREE.Mesh(plyGeometry, material);
-      result = new THREE.Group();
-      result.add(mesh);
-    } else if (!isPly && gltf) {
-      result = gltf.scene.clone();
-    }
-
-    if (!result) return null;
+  // Load model using GLTFLoader only
+  useEffect(() => {
+    setIsLoading(true);
+    setError(null);
     
-    // Automatically center the group visually
-    const box = new THREE.Box3().setFromObject(result);
-    const center = box.getCenter(new THREE.Vector3());
-    result.position.sub(center);
+    const loader = new GLTFLoader();
+    loader.load(
+      url,
+      (gltf) => {
+        try {
+          const scene = gltf.scene.clone();
+          
+          // Ensure shadows are enabled
+          scene.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+          
+          // Center the model
+          const box = new THREE.Box3().setFromObject(scene);
+          const center = box.getCenter(new THREE.Vector3());
+          scene.position.sub(center);
+          
+          setModelScene(scene);
+          onLoad?.(scene);
+          setIsLoading(false);
+        } catch (err) {
+          console.error('Error processing GLTF:', err);
+          setError('Failed to process model file');
+          setIsLoading(false);
+        }
+      },
+      undefined,
+      (err) => {
+        console.error('Error loading GLTF:', err);
+        setError('Failed to load model file');
+        setIsLoading(false);
+      }
+    );
     
-    onLoad?.(result);
-    return result;
-  }, [gltf, plyGeometry, isPly]);
+    // Cleanup
+    return () => {
+      if (modelScene) {
+        modelScene.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.geometry?.dispose();
+            if (Array.isArray(child.material)) {
+              child.material.forEach(m => m.dispose());
+            } else {
+              child.material?.dispose();
+            }
+          }
+        });
+      }
+    };
+  }, [url]);
 
-  if (!scene) return null;
+  if (isLoading) {
+    return (
+      <Html center>
+        <div className="text-primary font-display font-bold animate-pulse text-sm">
+          LOADING {id.toUpperCase()}...
+        </div>
+      </Html>
+    );
+  }
+
+  if (error) {
+    return (
+      <Html center>
+        <div className="text-red-500 font-display font-bold text-sm">
+          ERROR: {error}
+        </div>
+      </Html>
+    );
+  }
+
+  if (!modelScene) return null;
 
   const isSelected = selectedObjectId === id;
 
@@ -66,7 +113,7 @@ function Model({
         setSelectedObjectId(id);
       }}
     >
-      <primitive object={scene} />
+      <primitive object={modelScene} />
       {isSelected && (
         <mesh>
           <boxGeometry args={[1, 2, 1]} />
@@ -110,12 +157,12 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
     wearableSceneRef.current = scene;
   };
 
+  // Merge geometries
   useEffect(() => {
     if (shouldMerge && avatarSceneRef.current && wearableSceneRef.current && avatarGroupRef.current && wearableGroupRef.current) {
       try {
         const geometries: THREE.BufferGeometry[] = [];
         
-        // Ensure matrices are up to date
         avatarGroupRef.current.updateMatrixWorld(true);
         wearableGroupRef.current.updateMatrixWorld(true);
 
@@ -124,23 +171,20 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
             if (child instanceof THREE.Mesh && child.geometry) {
               let geom = child.geometry.clone();
               
-              // Apply world transform
               child.updateMatrixWorld(true);
               geom.applyMatrix4(child.matrixWorld);
 
-              // Normalize attributes for mergeGeometries
-              // 1. Ensure UVs exist
+              // Ensure required attributes exist
               if (!geom.attributes.uv) {
                 const count = geom.attributes.position.count;
                 geom.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(count * 2), 2));
               }
 
-              // 2. Ensure Normals exist
               if (!geom.attributes.normal) {
                 geom.computeVertexNormals();
               }
 
-              // 3. Strip non-standard attributes that might cause compatibility issues
+              // Remove non-standard attributes
               const standardAttributes = ['position', 'normal', 'uv', 'color'];
               Object.keys(geom.attributes).forEach(key => {
                 if (!standardAttributes.includes(key)) {
@@ -148,7 +192,6 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
                 }
               });
 
-              // 4. Strip morph attributes and groups
               geom.morphAttributes = {};
               if (geom.groups) geom.groups = [];
 
@@ -161,12 +204,12 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
         processObject(wearableGroupRef.current);
 
         if (geometries.length > 0) {
-          const combined = mergeGeometries(geometries);
-          // Use a neutral but high-quality material for the prototype merge
+          const combined = mergeGeometries(geometries, true);
           const material = new THREE.MeshStandardMaterial({ 
             color: 0xcccccc,
             roughness: 0.3,
-            metalness: 0.2
+            metalness: 0.2,
+            side: THREE.DoubleSide
           });
           const mergedMesh = new THREE.Mesh(combined, material);
           mergedMesh.castShadow = true;
@@ -185,6 +228,10 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
           mergedGroupRef.current.add(mergedMesh);
           mergedGroupRef.current.visible = true;
           setIsMerged(true);
+          
+          toast.success("Models merged successfully", {
+            description: `Combined ${geometries.length} geometries`
+          });
         }
 
         setShouldMerge(false);
@@ -198,6 +245,7 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
     }
   }, [shouldMerge]);
 
+  // Handle unmerge
   useEffect(() => {
     if (!isMerged && avatarGroupRef.current && wearableGroupRef.current) {
       avatarGroupRef.current.visible = true;
@@ -212,7 +260,7 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
   return (
     <group position={[0, 0, 0]}>
       <group ref={avatarGroupRef} position={[0, 0, 0]}>
-        <Suspense fallback={<Html center><div className="text-primary font-display font-bold animate-pulse text-lg">INITIALIZING AVATAR...</div></Html>}>
+        <Suspense fallback={null}>
           {avatarUrl && <Model id="avatar" url={avatarUrl} onLoad={handleAvatarLoad} />}
         </Suspense>
       </group>

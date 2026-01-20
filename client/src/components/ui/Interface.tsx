@@ -1,36 +1,120 @@
 import { useState } from 'react';
 import { useStore } from '@/store';
-import { Shirt, User, Upload, Box, CheckCircle2, Zap, Combine, Trash2 } from 'lucide-react';
+import { Shirt, User, Upload, Box, CheckCircle2, Zap, Combine, Trash2, XCircle, AlertCircle, MoreVertical, GitMerge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import WearablePreview from './WearablePreview';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import * as THREE from 'three';
 
 import defaultObject from '@assets/object_0_1766404645511.glb?url';
 
-const WEARABLE_ITEMS = [
-  {
-    id: 'default',
-    name: 'Default Wearable',
-    url: defaultObject,
-    isDefault: true
-  }
-];
+interface WearableItem {
+  id: string;
+  name: string;
+  url: string;
+  isDefault: boolean;
+  isValid?: boolean;
+}
+
+// Helper function to validate GLTF rig compatibility
+async function validateGLTFRig(file: File): Promise<{ isValid: boolean; message: string; url?: string }> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    
+    reader.onload = () => {
+      const blob = new Blob([reader.result as ArrayBuffer], { 
+        type: 'model/gltf-binary'
+      });
+      
+      const url = URL.createObjectURL(blob);
+      const finalUrl = `${url}#.glb`;
+      const loader = new GLTFLoader();
+      
+      loader.load(
+        finalUrl,
+        (gltf) => {
+          try {
+            // Check if model has valid geometry
+            let hasGeometry = false;
+            let hasSkeleton = false;
+            let meshCount = 0;
+            
+            gltf.scene.traverse((child) => {
+              if (child instanceof THREE.Mesh) {
+                hasGeometry = true;
+                meshCount++;
+              }
+              if (child instanceof THREE.SkinnedMesh) {
+                hasSkeleton = true;
+              }
+            });
+            
+            if (!hasGeometry) {
+              resolve({
+                isValid: false,
+                message: 'No valid geometry found in model'
+              });
+              URL.revokeObjectURL(url);
+              return;
+            }
+            
+            // Basic validation passed
+            resolve({
+              isValid: true,
+              message: `Valid model with ${meshCount} mesh${meshCount > 1 ? 'es' : ''}${hasSkeleton ? ' (rigged)' : ''}`,
+              url: finalUrl
+            });
+          } catch (err) {
+            resolve({
+              isValid: false,
+              message: 'Invalid model structure'
+            });
+            URL.revokeObjectURL(url);
+          }
+        },
+        undefined,
+        (err) => {
+          resolve({
+            isValid: false,
+            message: 'Failed to load GLB file'
+          });
+          URL.revokeObjectURL(url);
+        }
+      );
+    };
+    
+    reader.onerror = () => {
+      resolve({
+        isValid: false,
+        message: 'Failed to read file'
+      });
+    };
+    
+    reader.readAsArrayBuffer(file);
+  });
+}
 
 export default function Interface() {
   const { 
-    setRotationVelocity, 
     setAvatarUrl, 
     setWearableUrl, 
     removeWearable,
     avatarUrl, 
     wearableUrl,
     hasUploadedAvatar,
-    hasUploadedWearable,
     resetCamera,
     resetWearablePosition,
     setShouldMerge,
@@ -40,40 +124,181 @@ export default function Interface() {
   
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingWearable, setIsUploadingWearable] = useState(false);
+  const [wearableItems, setWearableItems] = useState<WearableItem[]>([
+    {
+      id: 'default',
+      name: 'Default Wearable',
+      url: defaultObject,
+      isDefault: true,
+      isValid: true
+    }
+  ]);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'wearable') => {
+  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (type === 'avatar') setIsUploadingAvatar(true);
-    else setIsUploadingWearable(true);
+    setIsUploadingAvatar(true);
 
-    setTimeout(() => {
-      // Create a blob URL with the correct extension for the loader to recognize
-      const extension = file.name.split('.').pop()?.toLowerCase();
-      const blob = new Blob([file], { type: file.type });
-      const url = URL.createObjectURL(blob) + `?ext=.${extension}`;
+    // Validate file extension - only accept .glb
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (extension !== 'glb') {
+      toast.error("Invalid file format", {
+        description: "Only .GLB files are supported"
+      });
+      setIsUploadingAvatar(false);
+      return;
+    }
+
+    // Create blob URL with .glb extension enforced
+    const reader = new FileReader();
+    reader.onload = () => {
+      const blob = new Blob([reader.result as ArrayBuffer], { 
+        type: 'model/gltf-binary'
+      });
       
-      if (type === 'avatar') {
-        setAvatarUrl(url, true);
-        setIsUploadingAvatar(false);
-        toast.success("Avatar updated successfully", {
-          description: file.name,
-          icon: <CheckCircle2 className="text-green-500" />
-        });
-      } else {
-        setWearableUrl(url, true);
-        setIsUploadingWearable(false);
-        toast.success("Wearable equipped successfully", {
-          description: file.name,
-          icon: <CheckCircle2 className="text-green-500" />
-        });
-      }
-    }, 800);
+      const baseUrl = URL.createObjectURL(blob);
+      const finalUrl = `${baseUrl}#.glb`;
+      
+      setAvatarUrl(finalUrl, true);
+      setIsUploadingAvatar(false);
+      toast.success("Avatar updated successfully", {
+        description: file.name,
+        icon: <CheckCircle2 className="text-green-500" />
+      });
+    };
+
+    reader.onerror = () => {
+      toast.error("Failed to read file", {
+        description: "Please try again with a different file"
+      });
+      setIsUploadingAvatar(false);
+    };
+
+    reader.readAsArrayBuffer(file);
+    
+    // Reset file input
+    event.target.value = '';
   };
 
-  const handleSelectWearable = (url: string | null) => {
-    setWearableUrl(url);
+  const handleWearableUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingWearable(true);
+
+    // Validate file extension - only accept .glb
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (extension !== 'glb') {
+      toast.error("Invalid file format", {
+        description: "Only .GLB files are supported"
+      });
+      setIsUploadingWearable(false);
+      return;
+    }
+
+    // Validate the GLB file
+    const validation = await validateGLTFRig(file);
+    
+    if (!validation.isValid) {
+      toast.error("Incompatible model", {
+        description: validation.message,
+        icon: <XCircle className="text-red-500" />
+      });
+      setIsUploadingWearable(false);
+      event.target.value = '';
+      return;
+    }
+
+    // Add to wearable items list
+    const newWearable: WearableItem = {
+      id: `wearable-${Date.now()}`,
+      name: file.name.replace('.glb', ''),
+      url: validation.url!,
+      isDefault: false,
+      isValid: true
+    };
+
+    setWearableItems(prev => [...prev, newWearable]);
+    setIsUploadingWearable(false);
+    
+    toast.success("Wearable uploaded successfully", {
+      description: validation.message,
+      icon: <CheckCircle2 className="text-green-500" />
+    });
+    
+    // Reset file input
+    event.target.value = '';
+  };
+
+  const handleSelectWearable = (item: WearableItem) => {
+    setWearableUrl(item.url);
+    toast.success(`${item.name} equipped`, {
+      icon: <CheckCircle2 className="text-primary" size={16} />
+    });
+  };
+
+  const handleDeleteWearable = (item: WearableItem, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
+    
+    if (item.isDefault) {
+      toast.error("Cannot delete default wearable");
+      return;
+    }
+
+    // Remove from list
+    setWearableItems(prev => prev.filter(w => w.id !== item.id));
+    
+    // If this was the selected wearable, clear selection
+    if (wearableUrl === item.url) {
+      removeWearable();
+    }
+    
+    // Revoke blob URL to free memory
+    URL.revokeObjectURL(item.url);
+    
+    toast.success("Wearable deleted", {
+      icon: <Trash2 className="text-red-500" size={16} />
+    });
+  };
+
+  const handleRemoveWearableFromScene = (item: WearableItem, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    if (wearableUrl !== item.url) {
+      toast.error("This wearable is not currently loaded");
+      return;
+    }
+
+    removeWearable();
+    toast.success("Wearable removed from scene", {
+      icon: <Trash2 className="text-red-500" size={16} />
+    });
+  };
+
+  const handleUnmergeFromCard = (item: WearableItem, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    if (!isMerged) {
+      toast.error("Models are not merged");
+      return;
+    }
+
+    if (wearableUrl !== item.url) {
+      toast.error("This wearable is not in the current merge");
+      return;
+    }
+
+    unmerge();
+    toast.success("Models separated successfully", {
+      icon: <Zap className="text-primary" size={16} />
+    });
   };
 
   const handleMergeMeshes = () => {
@@ -132,7 +357,7 @@ export default function Interface() {
                 <SheetTitle className="text-3xl font-display font-bold text-white tracking-widest uppercase italic">
                   Wardrobe
                 </SheetTitle>
-                <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">Control Panel v2.9.3</p>
+                <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">Control Panel v3.0.1</p>
               </SheetHeader>
               
               <ScrollArea className="flex-1 px-8">
@@ -155,14 +380,14 @@ export default function Interface() {
                         <Upload size={32} className={`${isUploadingAvatar ? 'text-primary' : 'text-gray-500'} transition-colors`} />
                         <div className="text-center">
                           <span className="text-sm font-bold block">{isUploadingAvatar ? 'PROCESSING...' : 'UPLOAD AVATAR'}</span>
-                          <span className="text-[10px] text-gray-500 font-mono">.GLB / .PLY SUPPORTED</span>
+                          <span className="text-[10px] text-gray-500 font-mono">.GLB ONLY</span>
                         </div>
                         <Input 
                           id="avatar-upload" 
                           type="file" 
-                          accept=".glb,.gltf,.ply" 
+                          accept=".glb" 
                           className="hidden" 
-                          onChange={(e) => handleFileUpload(e, 'avatar')}
+                          onChange={handleAvatarUpload}
                           disabled={isUploadingAvatar}
                         />
                       </Label>
@@ -178,57 +403,142 @@ export default function Interface() {
                         <Box size={20} className="animate-pulse" />
                         <h3 className="font-display text-lg font-bold uppercase tracking-widest">Loadout</h3>
                       </div>
-                      {hasUploadedWearable && !isUploadingWearable && <CheckCircle2 size={16} className="text-green-500" />}
-                    </div>
-
-                    {/* Wearables Preview Gallery */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-gray-500">
-                        Available Items
-                      </div>
-                      <div className="grid grid-cols-1 gap-2">
-                        {WEARABLE_ITEMS.map((item) => (
-                          <button
-                            key={item.id}
-                            onClick={() => handleSelectWearable(item.url)}
-                            className="text-left transition-all group"
-                          >
-                            <WearablePreview 
-                              url={item.url}
-                              isSelected={wearableUrl === item.url}
-                            />
-                            <div className="mt-2">
-                              <div className="font-mono font-bold uppercase tracking-wider text-xs group-hover:text-primary transition-colors">
-                                {item.name}
-                              </div>
-                              <div className="text-[10px] text-gray-400 font-mono">
-                                {item.isDefault ? 'DEFAULT PREVIEW' : 'CUSTOM'}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
+                      <div className="text-[10px] font-mono text-gray-500">
+                        {wearableItems.length} ITEM{wearableItems.length !== 1 ? 'S' : ''}
                       </div>
                     </div>
 
-                    <div className="group relative pt-2">
+                    {/* Upload New Wearable */}
+                    <div className="group relative">
                       <Label 
                         htmlFor="wearable-upload" 
-                        className={`flex flex-col items-center justify-center gap-4 h-36 border-2 border-dashed rounded-2xl transition-all cursor-pointer ${isUploadingWearable ? 'border-primary bg-primary/10 animate-pulse' : 'border-white/10 hover:border-primary/50 hover:bg-white/5'}`}
+                        className={`flex flex-col items-center justify-center gap-4 h-32 border-2 border-dashed rounded-2xl transition-all cursor-pointer ${isUploadingWearable ? 'border-primary bg-primary/10 animate-pulse' : 'border-white/10 hover:border-primary/50 hover:bg-white/5'}`}
                       >
-                        <Upload size={32} className={`${isUploadingWearable ? 'text-primary' : 'text-gray-500'} transition-colors`} />
+                        <Upload size={28} className={`${isUploadingWearable ? 'text-primary' : 'text-gray-500'} transition-colors`} />
                         <div className="text-center">
-                          <span className="text-sm font-bold block">{isUploadingWearable ? 'PROCESSING...' : 'UPLOAD WEARABLE'}</span>
-                          <span className="text-[10px] text-gray-500 font-mono">.GLB / .PLY SUPPORTED</span>
+                          <span className="text-sm font-bold block">{isUploadingWearable ? 'VALIDATING...' : 'ADD WEARABLE'}</span>
+                          <span className="text-[10px] text-gray-500 font-mono">.GLB ONLY</span>
                         </div>
                         <Input 
                           id="wearable-upload" 
                           type="file" 
-                          accept=".glb,.gltf,.ply" 
+                          accept=".glb" 
                           className="hidden" 
-                          onChange={(e) => handleFileUpload(e, 'wearable')}
+                          onChange={handleWearableUpload}
                           disabled={isUploadingWearable}
                         />
                       </Label>
+                    </div>
+
+                    {/* Wearables List */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-gray-500">
+                        <span>Available Items</span>
+                        {wearableItems.length > 1 && (
+                          <span className="text-primary">{wearableItems.length - 1} Custom</span>
+                        )}
+                      </div>
+                      
+                      <ScrollArea className="h-[400px] pr-4">
+                        <div className="space-y-3">
+                          {wearableItems.map((item) => (
+                            <div
+                              key={item.id}
+                              className="group/item relative"
+                            >
+                              <button
+                                onClick={() => handleSelectWearable(item)}
+                                className="w-full text-left transition-all"
+                              >
+                                <div className="relative">
+                                  <WearablePreview 
+                                    url={item.url}
+                                    isSelected={wearableUrl === item.url}
+                                  />
+                                  
+                                  {/* Menu Button - Always visible */}
+                                  <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <button
+                                          className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm border border-white/10 hover:bg-black/80 hover:border-primary/50 transition-all"
+                                        >
+                                          <MoreVertical size={14} className="text-white" />
+                                        </button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" className="w-48 bg-black/95 backdrop-blur-xl border-white/10">
+                                        {/* Unmerge option - only if this wearable is merged */}
+                                        {isMerged && wearableUrl === item.url && (
+                                          <>
+                                            <DropdownMenuItem
+                                              onClick={(e) => handleUnmergeFromCard(item, e)}
+                                              className="text-primary hover:text-primary hover:bg-primary/10 cursor-pointer"
+                                            >
+                                              <GitMerge size={14} className="mr-2" />
+                                              Unmerge
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator className="bg-white/10" />
+                                          </>
+                                        )}
+                                        
+                                        {/* Remove option - only if this wearable is loaded */}
+                                        {wearableUrl === item.url && !isMerged && (
+                                          <>
+                                            <DropdownMenuItem
+                                              onClick={(e) => handleRemoveWearableFromScene(item, e)}
+                                              className="text-orange-500 hover:text-orange-400 hover:bg-orange-500/10 cursor-pointer"
+                                            >
+                                              <Trash2 size={14} className="mr-2" />
+                                              Remove from Scene
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator className="bg-white/10" />
+                                          </>
+                                        )}
+                                        
+                                        {/* Delete option - always available except for default */}
+                                        <DropdownMenuItem
+                                          onClick={(e) => handleDeleteWearable(item, e)}
+                                          disabled={item.isDefault}
+                                          className="text-red-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                          <Trash2 size={14} className="mr-2" />
+                                          {item.isDefault ? 'Cannot Delete Default' : 'Delete Wearable'}
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
+                                </div>
+                                
+                                <div className="mt-2 flex items-start justify-between gap-2">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-mono font-bold uppercase tracking-wider text-xs group-hover/item:text-primary transition-colors truncate">
+                                      {item.name}
+                                    </div>
+                                    <div className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5">
+                                      {item.isDefault ? (
+                                        <>
+                                          <CheckCircle2 size={10} className="text-green-500" />
+                                          <span>DEFAULT</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <CheckCircle2 size={10} className="text-primary" />
+                                          <span>CUSTOM</span>
+                                        </>
+                                      )}
+                                      {wearableUrl === item.url && (
+                                        <span className="ml-1 px-1.5 py-0.5 bg-primary/20 text-primary rounded text-[8px] font-bold">
+                                          LOADED
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
                     </div>
                   </section>
 
@@ -281,7 +591,7 @@ export default function Interface() {
                     <p className="text-[10px] text-gray-400 leading-relaxed font-mono uppercase tracking-tighter">
                       {isMerged 
                         ? 'Models merged into single geometry. Unmerge to edit separately.'
-                        : 'Drag models in 3D space. Merge to combine geometry.'}
+                        : 'Upload multiple wearables. Drag models in 3D space. Merge to combine geometry.'}
                     </p>
                   </div>
                 </div>
