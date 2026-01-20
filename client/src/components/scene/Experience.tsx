@@ -100,12 +100,37 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
         const processObject = (obj: THREE.Object3D) => {
           obj.traverse((child) => {
             if (child instanceof THREE.Mesh && child.geometry) {
-              const clone = child.geometry.clone();
-              // Apply the world transform of this specific mesh relative to the scene root
-              // Since we want the merged mesh at world origin [0,0,0]
+              let geom = child.geometry.clone();
+              
+              // Apply world transform
               child.updateMatrixWorld(true);
-              clone.applyMatrix4(child.matrixWorld);
-              geometries.push(clone);
+              geom.applyMatrix4(child.matrixWorld);
+
+              // Normalize attributes for mergeGeometries
+              // 1. Ensure UVs exist
+              if (!geom.attributes.uv) {
+                const count = geom.attributes.position.count;
+                geom.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(count * 2), 2));
+              }
+
+              // 2. Ensure Normals exist
+              if (!geom.attributes.normal) {
+                geom.computeVertexNormals();
+              }
+
+              // 3. Strip non-standard attributes that might cause compatibility issues
+              const standardAttributes = ['position', 'normal', 'uv', 'color'];
+              Object.keys(geom.attributes).forEach(key => {
+                if (!standardAttributes.includes(key)) {
+                  geom.deleteAttribute(key);
+                }
+              });
+
+              // 4. Strip morph attributes and groups
+              geom.morphAttributes = {};
+              if (geom.groups) geom.groups = [];
+
+              geometries.push(geom);
             }
           });
         };
