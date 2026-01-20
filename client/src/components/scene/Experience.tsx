@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { useStore } from '@/store';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { toast } from 'sonner';
 
 function Model({ 
   id, 
