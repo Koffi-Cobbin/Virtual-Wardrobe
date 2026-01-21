@@ -493,23 +493,29 @@ const handleLoadWearable = (item: WearableItem) => {
                               key={item.id}
                               className="group/item relative"
                             >
-                              <button
-                                onClick={() => item.isLoaded ? handleUnloadWearable(item) : handleLoadWearable(item)}
+                              <div
                                 className="w-full text-left transition-all"
-                                disabled={isMerged}
                               >
-                                <div className="relative">
+                                <div 
+                                  className="relative cursor-pointer"
+                                  onClick={() => {
+                                    if (!isMerged) {
+                                      item.isLoaded ? handleUnloadWearable(item) : handleLoadWearable(item);
+                                    }
+                                  }}
+                                >
                                   <WearablePreview 
                                     url={item.url}
                                     isSelected={item.isLoaded}
                                   />
                                   
                                   {/* Menu Button */}
-                                  <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
+                                  <div className="absolute top-2 right-2 z-10">
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
                                         <button
-                                          className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm border border-white/10 hover:bg-black/80 hover:border-primary/50 transition-all"
+                                          className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm border border-white/10 hover:bg-black/80 hover:border-primary/50 transition-all pointer-events-auto"
+                                          onClick={(e) => e.stopPropagation()}
                                         >
                                           <MoreVertical size={14} className="text-white" />
                                         </button>
@@ -517,7 +523,10 @@ const handleLoadWearable = (item: WearableItem) => {
                                       <DropdownMenuContent align="end" className="w-48 bg-black/95 backdrop-blur-xl border-white/10">
                                         {/* Load/Unload */}
                                         <DropdownMenuItem
-                                          onClick={() => item.isLoaded ? handleUnloadWearable(item) : handleLoadWearable(item)}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            item.isLoaded ? handleUnloadWearable(item) : handleLoadWearable(item);
+                                          }}
                                           disabled={isMerged}
                                           className="text-primary hover:text-primary hover:bg-primary/10 cursor-pointer disabled:opacity-50"
                                         >
@@ -538,7 +547,10 @@ const handleLoadWearable = (item: WearableItem) => {
                                         
                                         {/* Delete */}
                                         <DropdownMenuItem
-                                          onClick={() => handleDeleteWearable(item)}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteWearable(item);
+                                          }}
                                           disabled={item.isDefault || item.isLoaded}
                                           className="text-red-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
@@ -575,7 +587,7 @@ const handleLoadWearable = (item: WearableItem) => {
                                     </div>
                                   </div>
                                 </div>
-                              </button>
+                              </div>
                             </div>
                           ))}
                         </div>
