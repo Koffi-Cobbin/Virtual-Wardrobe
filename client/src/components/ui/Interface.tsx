@@ -237,7 +237,7 @@ export default function Interface() {
     event.target.value = '';
   };
 
-  const handleLoadWearable = (item: WearableItem) => {
+const handleLoadWearable = (item: WearableItem) => {
     // Check if already loaded
     if (item.isLoaded) {
       toast.error("Wearable already loaded", {
@@ -259,8 +259,8 @@ export default function Interface() {
       prev.map(w => w.id === item.id ? { ...w, isLoaded: true } : w)
     );
 
-    // Set as active wearable (for backward compatibility with single wearable system)
-    setWearableUrl(item.url);
+    // Add to the store's loadedWearables Map (this is what Experience.tsx uses!)
+    useStore.getState().addWearable(item.id, item.url, item.name);
     
     toast.success(`${item.name} loaded`, {
       icon: <CheckCircle2 className="text-primary" size={16} />
