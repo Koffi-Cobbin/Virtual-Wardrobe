@@ -1,8 +1,8 @@
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Environment, ContactShadows, OrbitControls, Html, TransformControls } from '@react-three/drei';
-import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
+import { Suspense, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
-import { useStore } from '@/store';
+import { useStore, type LoadedWearable } from '@/store';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { toast } from 'sonner';
@@ -124,24 +124,74 @@ function Model({
   );
 }
 
+function WearableInstance({ 
+  wearable,
+  onTransformChange 
+}: { 
+  wearable: LoadedWearable;
+  onTransformChange: (position: THREE.Vector3, rotation: THREE.Euler) => void;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+  const sceneRef = useRef<THREE.Group | null>(null);
+  const selectedObjectId = useStore((state) => state.selectedObjectId);
+
+  const handleLoad = (scene: THREE.Group) => {
+    sceneRef.current = scene;
+  };
+
+  // Apply stored position and rotation
+  useEffect(() => {
+    if (groupRef.current) {
+      groupRef.current.position.set(
+        wearable.position.x,
+        wearable.position.y,
+        wearable.position.z
+      );
+      groupRef.current.rotation.set(
+        wearable.rotation.x,
+        wearable.rotation.y,
+        wearable.rotation.z
+      );
+    }
+  }, [wearable.position, wearable.rotation]);
+
+  if (!wearable.isVisible) return null;
+
+  return (
+    <group 
+      ref={groupRef}
+      position={[wearable.position.x, wearable.position.y, wearable.position.z]}
+      rotation={[wearable.rotation.x, wearable.rotation.y, wearable.rotation.z]}
+    >
+      <Suspense fallback={null}>
+        <Model 
+          id={wearable.id}
+          url={wearable.url}
+          onLoad={handleLoad}
+        />
+      </Suspense>
+    </group>
+  );
+}
+
 function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolean) => void }) {
   const avatarUrl = useStore((state) => state.avatarUrl);
-  const wearableUrl = useStore((state) => state.wearableUrl);
+  const loadedWearables = useStore((state) => state.loadedWearables);
   const rotationVelocity = useStore((state) => state.rotationVelocity);
   const selectedObjectId = useStore((state) => state.selectedObjectId);
   const setSelectedObjectId = useStore((state) => state.setSelectedObjectId);
-  const wearablePosition = useStore((state) => state.wearablePosition);
-  const setWearablePosition = useStore((state) => state.setWearablePosition);
+  const updateWearablePosition = useStore((state) => state.updateWearablePosition);
+  const updateWearableRotation = useStore((state) => state.updateWearableRotation);
   const shouldMerge = useStore((state) => state.shouldMerge);
   const setShouldMerge = useStore((state) => state.setShouldMerge);
   const setIsMerged = useStore((state) => state.setIsMerged);
   const isMerged = useStore((state) => state.isMerged);
 
   const avatarGroupRef = useRef<THREE.Group>(null);
-  const wearableGroupRef = useRef<THREE.Group>(null);
+  const wearableGroupsRef = useRef<Map<string, THREE.Group>>(new Map());
   const mergedGroupRef = useRef<THREE.Group>(null);
   const avatarSceneRef = useRef<THREE.Group | null>(null);
-  const wearableSceneRef = useRef<THREE.Group | null>(null);
+  const wearableScenesRef = useRef<Map<string, THREE.Group>>(new Map());
 
   useFrame((state, delta) => {
     if (avatarGroupRef.current && !selectedObjectId) {
@@ -153,18 +203,30 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
     avatarSceneRef.current = scene;
   };
 
-  const handleWearableLoad = (scene: THREE.Group) => {
-    wearableSceneRef.current = scene;
+  const handleWearableTransformChange = (id: string, position: THREE.Vector3, rotation: THREE.Euler) => {
+    updateWearablePosition(id, { x: position.x, y: position.y, z: position.z });
+    updateWearableRotation(id, { x: rotation.x, y: rotation.y, z: rotation.z });
   };
 
   // Merge geometries
   useEffect(() => {
-    if (shouldMerge && avatarSceneRef.current && wearableSceneRef.current && avatarGroupRef.current && wearableGroupRef.current) {
+    if (shouldMerge && avatarSceneRef.current && avatarGroupRef.current) {
       try {
         const geometries: THREE.BufferGeometry[] = [];
+        const visibleWearables = Array.from(loadedWearables.values()).filter(w => w.isVisible);
         
+        if (visibleWearables.length === 0) {
+          toast.error("No wearables to merge", {
+            description: "Load at least one wearable"
+          });
+          setShouldMerge(false);
+          return;
+        }
+
         avatarGroupRef.current.updateMatrixWorld(true);
-        wearableGroupRef.current.updateMatrixWorld(true);
+        
+        // Update all wearable groups
+        wearableGroupsRef.current.forEach(group => group.updateMatrixWorld(true));
 
         const processObject = (obj: THREE.Object3D) => {
           obj.traverse((child) => {
@@ -200,8 +262,16 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
           });
         };
 
+        // Process avatar
         processObject(avatarGroupRef.current);
-        processObject(wearableGroupRef.current);
+        
+        // Process all visible wearables
+        visibleWearables.forEach(wearable => {
+          const group = wearableGroupsRef.current.get(wearable.id);
+          if (group) {
+            processObject(group);
+          }
+        });
 
         if (geometries.length > 0) {
           const combined = mergeGeometries(geometries, true);
@@ -216,7 +286,7 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
           mergedMesh.receiveShadow = true;
 
           avatarGroupRef.current.visible = false;
-          wearableGroupRef.current.visible = false;
+          wearableGroupsRef.current.forEach(group => group.visible = false);
 
           if (mergedGroupRef.current) {
             mergedGroupRef.current.clear();
@@ -230,7 +300,7 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
           setIsMerged(true);
           
           toast.success("Models merged successfully", {
-            description: `Combined ${geometries.length} geometries`
+            description: `Combined avatar with ${visibleWearables.length} wearable(s)`
           });
         }
 
@@ -247,15 +317,19 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
 
   // Handle unmerge
   useEffect(() => {
-    if (!isMerged && avatarGroupRef.current && wearableGroupRef.current) {
+    if (!isMerged && avatarGroupRef.current) {
       avatarGroupRef.current.visible = true;
-      wearableGroupRef.current.visible = !!wearableUrl;
+      wearableGroupsRef.current.forEach(group => group.visible = true);
       if (mergedGroupRef.current) {
         mergedGroupRef.current.visible = false;
         mergedGroupRef.current.clear();
       }
     }
-  }, [isMerged, wearableUrl]);
+  }, [isMerged]);
+
+  const wearablesArray = Array.from(loadedWearables.values());
+  const selectedWearable = selectedObjectId ? loadedWearables.get(selectedObjectId) : null;
+  const selectedWearableGroup = selectedObjectId ? wearableGroupsRef.current.get(selectedObjectId) : null;
 
   return (
     <group position={[0, 0, 0]}>
@@ -265,47 +339,67 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
         </Suspense>
       </group>
 
-      <group 
-        ref={wearableGroupRef}
-        position={[wearablePosition.x, wearablePosition.y, wearablePosition.z]}
-      >
-        <Suspense fallback={null}>
-          {wearableUrl && (
+      {/* Render all loaded wearables */}
+      {wearablesArray.map((wearable) => (
+        <group
+          key={wearable.id}
+          ref={(el) => {
+            if (el) {
+              wearableGroupsRef.current.set(wearable.id, el);
+            } else {
+              wearableGroupsRef.current.delete(wearable.id);
+            }
+          }}
+          position={[wearable.position.x, wearable.position.y, wearable.position.z]}
+          rotation={[wearable.rotation.x, wearable.rotation.y, wearable.rotation.z]}
+          visible={wearable.isVisible && !isMerged}
+        >
+          <Suspense fallback={null}>
             <Model 
-              id="wearable"
-              url={wearableUrl}
-              onLoad={handleWearableLoad}
+              id={wearable.id}
+              url={wearable.url}
             />
-          )}
-        </Suspense>
-      </group>
+          </Suspense>
+        </group>
+      ))}
 
-      {selectedObjectId === 'wearable' && wearableGroupRef.current && (
+      {/* Transform controls for selected wearable */}
+      {selectedWearable && selectedWearableGroup && !isMerged && (
         <>
           <TransformControls 
-            object={wearableGroupRef.current} 
+            object={selectedWearableGroup} 
             mode="translate"
             size={1.2}
             onMouseDown={() => setControlsEnabled(false)}
             onMouseUp={() => setControlsEnabled(true)}
             onChange={() => {
-              if (wearableGroupRef.current) {
-                const pos = wearableGroupRef.current.position;
-                setWearablePosition({ x: pos.x, y: pos.y, z: pos.z });
+              if (selectedWearableGroup) {
+                const pos = selectedWearableGroup.position;
+                const rot = selectedWearableGroup.rotation;
+                updateWearablePosition(selectedWearable.id, { x: pos.x, y: pos.y, z: pos.z });
+                updateWearableRotation(selectedWearable.id, { x: rot.x, y: rot.y, z: rot.z });
               }
             }}
           />
           <TransformControls 
-            object={wearableGroupRef.current} 
+            object={selectedWearableGroup} 
             mode="rotate"
             size={0.8}
             onMouseDown={() => setControlsEnabled(false)}
             onMouseUp={() => setControlsEnabled(true)}
+            onChange={() => {
+              if (selectedWearableGroup) {
+                const pos = selectedWearableGroup.position;
+                const rot = selectedWearableGroup.rotation;
+                updateWearablePosition(selectedWearable.id, { x: pos.x, y: pos.y, z: pos.z });
+                updateWearableRotation(selectedWearable.id, { x: rot.x, y: rot.y, z: rot.z });
+              }
+            }}
           />
         </>
       )}
       
-      {selectedObjectId === 'avatar' && avatarGroupRef.current && (
+      {selectedObjectId === 'avatar' && avatarGroupRef.current && !isMerged && (
         <TransformControls 
           object={avatarGroupRef.current} 
           mode="rotate"

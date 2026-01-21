@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '@/store';
-import { Shirt, User, Upload, Box, CheckCircle2, Zap, Combine, Trash2, XCircle, AlertCircle, MoreVertical, GitMerge } from 'lucide-react';
+import { Shirt, User, Upload, Box, CheckCircle2, Zap, Combine, Trash2, XCircle, MoreVertical, GitMerge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,6 +27,7 @@ interface WearableItem {
   url: string;
   isDefault: boolean;
   isValid?: boolean;
+  isLoaded?: boolean;
 }
 
 // Helper function to validate GLTF rig compatibility
@@ -130,9 +131,13 @@ export default function Interface() {
       name: 'Default Wearable',
       url: defaultObject,
       isDefault: true,
-      isValid: true
+      isValid: true,
+      isLoaded: false
     }
   ]);
+
+  // Track loaded wearables
+  const loadedWearables = wearableItems.filter(item => item.isLoaded);
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -216,7 +221,8 @@ export default function Interface() {
       name: file.name.replace('.glb', ''),
       url: validation.url!,
       isDefault: false,
-      isValid: true
+      isValid: true,
+      isLoaded: false
     };
 
     setWearableItems(prev => [...prev, newWearable]);
@@ -231,100 +237,119 @@ export default function Interface() {
     event.target.value = '';
   };
 
-  const handleSelectWearable = (item: WearableItem) => {
+  const handleLoadWearable = (item: WearableItem) => {
+    // Check if already loaded
+    if (item.isLoaded) {
+      toast.error("Wearable already loaded", {
+        description: "Remove it from scene first"
+      });
+      return;
+    }
+
+    // Check merge state
+    if (isMerged) {
+      toast.error("Cannot load while merged", {
+        description: "Unmerge models first"
+      });
+      return;
+    }
+
+    // Mark as loaded
+    setWearableItems(prev => 
+      prev.map(w => w.id === item.id ? { ...w, isLoaded: true } : w)
+    );
+
+    // Set as active wearable (for backward compatibility with single wearable system)
     setWearableUrl(item.url);
-    toast.success(`${item.name} equipped`, {
+    
+    toast.success(`${item.name} loaded`, {
       icon: <CheckCircle2 className="text-primary" size={16} />
     });
   };
 
-  const handleDeleteWearable = (item: WearableItem, event?: React.MouseEvent) => {
-    if (event) {
-      event.stopPropagation();
+  const handleUnloadWearable = (item: WearableItem) => {
+    if (!item.isLoaded) {
+      toast.error("Wearable not loaded");
+      return;
     }
-    
+
+    if (isMerged) {
+      toast.error("Cannot unload while merged", {
+        description: "Unmerge models first"
+      });
+      return;
+    }
+
+    // Mark as unloaded
+    setWearableItems(prev => 
+      prev.map(w => w.id === item.id ? { ...w, isLoaded: false } : w)
+    );
+
+    // If this is the current wearable, clear it
+    if (wearableUrl === item.url) {
+      removeWearable();
+    }
+
+    toast.success("Wearable unloaded", {
+      icon: <Trash2 className="text-orange-500" size={16} />
+    });
+  };
+
+  const handleDeleteWearable = (item: WearableItem) => {
     if (item.isDefault) {
       toast.error("Cannot delete default wearable");
+      return;
+    }
+
+    if (item.isLoaded) {
+      toast.error("Cannot delete loaded wearable", {
+        description: "Unload it from scene first"
+      });
       return;
     }
 
     // Remove from list
     setWearableItems(prev => prev.filter(w => w.id !== item.id));
     
-    // If this was the selected wearable, clear selection
-    if (wearableUrl === item.url) {
-      removeWearable();
-    }
-    
     // Revoke blob URL to free memory
     URL.revokeObjectURL(item.url);
     
-    toast.success("Wearable deleted", {
+    toast.success("Wearable deleted permanently", {
       icon: <Trash2 className="text-red-500" size={16} />
-    });
-  };
-
-  const handleRemoveWearableFromScene = (item: WearableItem, event?: React.MouseEvent) => {
-    if (event) {
-      event.stopPropagation();
-    }
-
-    if (wearableUrl !== item.url) {
-      toast.error("This wearable is not currently loaded");
-      return;
-    }
-
-    removeWearable();
-    toast.success("Wearable removed from scene", {
-      icon: <Trash2 className="text-red-500" size={16} />
-    });
-  };
-
-  const handleUnmergeFromCard = (item: WearableItem, event?: React.MouseEvent) => {
-    if (event) {
-      event.stopPropagation();
-    }
-
-    if (!isMerged) {
-      toast.error("Models are not merged");
-      return;
-    }
-
-    if (wearableUrl !== item.url) {
-      toast.error("This wearable is not in the current merge");
-      return;
-    }
-
-    unmerge();
-    toast.success("Models separated successfully", {
-      icon: <Zap className="text-primary" size={16} />
     });
   };
 
   const handleMergeMeshes = () => {
-    if (!avatarUrl || !wearableUrl) {
-      toast.error("Load both avatar and wearable first", {
-        description: "You need both models to merge"
+    if (!avatarUrl) {
+      toast.error("Load avatar first", {
+        description: "Avatar is required for merging"
       });
       return;
     }
+
+    if (loadedWearables.length === 0) {
+      toast.error("Load at least one wearable", {
+        description: "You need wearables to merge"
+      });
+      return;
+    }
+
     if (isMerged) {
       toast.error("Models are already merged", {
-        description: "Use unmerge to separate them first"
+        description: "Unmerge them first"
       });
       return;
     }
+
     setShouldMerge(true);
-    toast.success("Merging models...", {
+    toast.success(`Merging avatar with ${loadedWearables.length} wearable${loadedWearables.length > 1 ? 's' : ''}...`, {
       icon: <Combine className="text-primary" size={16} />
     });
   };
 
   const handleUnmergeMeshes = () => {
     if (!isMerged) {
-      toast.error("Models are not merged", {
-        description: "Merge them first to unmerge"
-      });
+      toast.error("Models are not merged");
       return;
     }
     unmerge();
@@ -333,10 +358,28 @@ export default function Interface() {
     });
   };
 
-  const handleRemoveWearable = () => {
+  const handleUnloadAll = () => {
+    if (isMerged) {
+      toast.error("Cannot unload while merged", {
+        description: "Unmerge models first"
+      });
+      return;
+    }
+
+    if (loadedWearables.length === 0) {
+      toast.error("No wearables loaded");
+      return;
+    }
+
+    // Unload all
+    setWearableItems(prev => 
+      prev.map(w => ({ ...w, isLoaded: false }))
+    );
+
     removeWearable();
-    toast.success("Wearable removed successfully", {
-      icon: <Trash2 className="text-red-500" size={16} />
+
+    toast.success(`Unloaded ${loadedWearables.length} wearable${loadedWearables.length > 1 ? 's' : ''}`, {
+      icon: <Trash2 className="text-orange-500" size={16} />
     });
   };
 
@@ -357,7 +400,9 @@ export default function Interface() {
                 <SheetTitle className="text-3xl font-display font-bold text-white tracking-widest uppercase italic">
                   Wardrobe
                 </SheetTitle>
-                <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">Control Panel v3.0.1</p>
+                <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">
+                  Multi-Load System v4.0
+                </p>
               </SheetHeader>
               
               <ScrollArea className="flex-1 px-8">
@@ -403,8 +448,10 @@ export default function Interface() {
                         <Box size={20} className="animate-pulse" />
                         <h3 className="font-display text-lg font-bold uppercase tracking-widest">Loadout</h3>
                       </div>
-                      <div className="text-[10px] font-mono text-gray-500">
-                        {wearableItems.length} ITEM{wearableItems.length !== 1 ? 'S' : ''}
+                      <div className="text-[10px] font-mono text-gray-500 space-x-2">
+                        <span className="text-primary">{loadedWearables.length} LOADED</span>
+                        <span>/</span>
+                        <span>{wearableItems.length} TOTAL</span>
                       </div>
                     </div>
 
@@ -447,16 +494,17 @@ export default function Interface() {
                               className="group/item relative"
                             >
                               <button
-                                onClick={() => handleSelectWearable(item)}
+                                onClick={() => item.isLoaded ? handleUnloadWearable(item) : handleLoadWearable(item)}
                                 className="w-full text-left transition-all"
+                                disabled={isMerged}
                               >
                                 <div className="relative">
                                   <WearablePreview 
                                     url={item.url}
-                                    isSelected={wearableUrl === item.url}
+                                    isSelected={item.isLoaded}
                                   />
                                   
-                                  {/* Menu Button - Always visible */}
+                                  {/* Menu Button */}
                                   <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
@@ -467,42 +515,35 @@ export default function Interface() {
                                         </button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end" className="w-48 bg-black/95 backdrop-blur-xl border-white/10">
-                                        {/* Unmerge option - only if this wearable is merged */}
-                                        {isMerged && wearableUrl === item.url && (
-                                          <>
-                                            <DropdownMenuItem
-                                              onClick={(e) => handleUnmergeFromCard(item, e)}
-                                              className="text-primary hover:text-primary hover:bg-primary/10 cursor-pointer"
-                                            >
-                                              <GitMerge size={14} className="mr-2" />
-                                              Unmerge
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator className="bg-white/10" />
-                                          </>
-                                        )}
-                                        
-                                        {/* Remove option - only if this wearable is loaded */}
-                                        {wearableUrl === item.url && !isMerged && (
-                                          <>
-                                            <DropdownMenuItem
-                                              onClick={(e) => handleRemoveWearableFromScene(item, e)}
-                                              className="text-orange-500 hover:text-orange-400 hover:bg-orange-500/10 cursor-pointer"
-                                            >
-                                              <Trash2 size={14} className="mr-2" />
-                                              Remove from Scene
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator className="bg-white/10" />
-                                          </>
-                                        )}
-                                        
-                                        {/* Delete option - always available except for default */}
+                                        {/* Load/Unload */}
                                         <DropdownMenuItem
-                                          onClick={(e) => handleDeleteWearable(item, e)}
-                                          disabled={item.isDefault}
+                                          onClick={() => item.isLoaded ? handleUnloadWearable(item) : handleLoadWearable(item)}
+                                          disabled={isMerged}
+                                          className="text-primary hover:text-primary hover:bg-primary/10 cursor-pointer disabled:opacity-50"
+                                        >
+                                          {item.isLoaded ? (
+                                            <>
+                                              <Trash2 size={14} className="mr-2" />
+                                              Unload from Scene
+                                            </>
+                                          ) : (
+                                            <>
+                                              <CheckCircle2 size={14} className="mr-2" />
+                                              Load to Scene
+                                            </>
+                                          )}
+                                        </DropdownMenuItem>
+                                        
+                                        <DropdownMenuSeparator className="bg-white/10" />
+                                        
+                                        {/* Delete */}
+                                        <DropdownMenuItem
+                                          onClick={() => handleDeleteWearable(item)}
+                                          disabled={item.isDefault || item.isLoaded}
                                           className="text-red-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                           <Trash2 size={14} className="mr-2" />
-                                          {item.isDefault ? 'Cannot Delete Default' : 'Delete Wearable'}
+                                          {item.isDefault ? 'Cannot Delete Default' : item.isLoaded ? 'Unload First' : 'Delete Permanently'}
                                         </DropdownMenuItem>
                                       </DropdownMenuContent>
                                     </DropdownMenu>
@@ -514,7 +555,7 @@ export default function Interface() {
                                     <div className="font-mono font-bold uppercase tracking-wider text-xs group-hover/item:text-primary transition-colors truncate">
                                       {item.name}
                                     </div>
-                                    <div className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5">
+                                    <div className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5 flex-wrap">
                                       {item.isDefault ? (
                                         <>
                                           <CheckCircle2 size={10} className="text-green-500" />
@@ -526,7 +567,7 @@ export default function Interface() {
                                           <span>CUSTOM</span>
                                         </>
                                       )}
-                                      {wearableUrl === item.url && (
+                                      {item.isLoaded && (
                                         <span className="ml-1 px-1.5 py-0.5 bg-primary/20 text-primary rounded text-[8px] font-bold">
                                           LOADED
                                         </span>
@@ -548,28 +589,28 @@ export default function Interface() {
                   <section className="space-y-3">
                     <h3 className="font-display text-sm font-bold uppercase tracking-widest text-primary">Controls</h3>
                     
-                    {wearableUrl && !isMerged && (
+                    {loadedWearables.length > 0 && !isMerged && (
                       <Button 
-                        onClick={handleRemoveWearable}
-                        className="w-full bg-red-500/20 hover:bg-red-500/40 text-red-500 border border-red-500/50 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
+                        onClick={handleUnloadAll}
+                        className="w-full bg-orange-500/20 hover:bg-orange-500/40 text-orange-500 border border-orange-500/50 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
                       >
                         <Trash2 size={16} className="mr-2" />
-                        Remove Wearable
+                        Unload All ({loadedWearables.length})
                       </Button>
                     )}
 
                     <Button 
                       onClick={() => {
                         resetWearablePosition();
-                        toast.success("Wearable position reset", {
+                        toast.success("All positions reset", {
                           icon: <Zap className="text-primary" size={16} />
                         });
                       }}
                       className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
-                      disabled={isMerged || !wearableUrl}
+                      disabled={isMerged || loadedWearables.length === 0}
                     >
                       <Zap size={16} className="mr-2" />
-                      Reset Position
+                      Reset Positions
                     </Button>
                   </section>
 
@@ -577,21 +618,23 @@ export default function Interface() {
                   <div className="mt-8 p-6 bg-primary/5 rounded-2xl border border-primary/20 space-y-4 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
                     <div className="flex justify-between text-[10px] font-mono text-primary italic relative">
-                      <span>SYNC ENGINE</span>
+                      <span>MULTI-LOAD ENGINE</span>
                       <span className="flex items-center gap-1">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping"/> 
-                        {isMerged ? 'MERGED' : 'ONLINE'}
+                        {isMerged ? 'MERGED' : loadedWearables.length > 0 ? 'ACTIVE' : 'STANDBY'}
                       </span>
                     </div>
                     <div className="space-y-1">
                       <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className={`h-full transition-all ${isMerged ? 'w-full bg-green-500' : 'w-[85%] bg-primary'}`} />
+                        <div className={`h-full transition-all ${isMerged ? 'w-full bg-green-500' : loadedWearables.length > 0 ? 'w-[85%] bg-primary' : 'w-[20%] bg-gray-500'}`} />
                       </div>
                     </div>
                     <p className="text-[10px] text-gray-400 leading-relaxed font-mono uppercase tracking-tighter">
                       {isMerged 
-                        ? 'Models merged into single geometry. Unmerge to edit separately.'
-                        : 'Upload multiple wearables. Drag models in 3D space. Merge to combine geometry.'}
+                        ? `Merged: ${loadedWearables.length + 1} model${loadedWearables.length > 0 ? 's' : ''}. Unmerge to edit separately.`
+                        : loadedWearables.length > 0
+                        ? `${loadedWearables.length} wearable${loadedWearables.length > 1 ? 's' : ''} loaded. Add more or merge geometry.`
+                        : 'Load wearables to start. Drag models in 3D. Merge to combine.'}
                     </p>
                   </div>
                 </div>
@@ -621,19 +664,31 @@ export default function Interface() {
             Virtual <span className="text-primary">Fit</span>
           </h1>
           <div className="flex items-center justify-end gap-2">
-            <p className="text-[10px] text-gray-600 font-mono tracking-[0.4em] uppercase">DRAG TO MOVE</p>
+            <p className="text-[10px] text-gray-600 font-mono tracking-[0.4em] uppercase">MULTI-LOAD v4.0</p>
           </div>
         </div>
       </div>
 
       {/* Footer Controls */}
       <div className="flex justify-end items-end pointer-events-auto">
-        <div className="mb-4">
+        <div className="mb-4 flex gap-3">
+          {/* Loaded Count Badge */}
+          {loadedWearables.length > 0 && (
+            <div className="bg-black/80 backdrop-blur-2xl border border-primary/30 rounded-xl px-4 h-14 flex items-center gap-3">
+              <Box className="text-primary" size={20} />
+              <div className="text-left">
+                <div className="text-xs font-mono text-primary font-bold">{loadedWearables.length}</div>
+                <div className="text-[10px] font-mono text-gray-500 uppercase">Loaded</div>
+              </div>
+            </div>
+          )}
+
+          {/* Merge/Unmerge Button */}
           {!isMerged ? (
             <Button 
               onClick={handleMergeMeshes}
               className="bg-primary/20 hover:bg-primary/40 text-primary border border-primary/50 rounded-xl h-14 px-6 font-mono uppercase tracking-wider text-sm transition-all backdrop-blur-2xl shadow-2xl active:scale-95"
-              disabled={!avatarUrl || !wearableUrl}
+              disabled={!avatarUrl || loadedWearables.length === 0}
             >
               <Combine size={20} className="mr-2" />
               Merge Models
@@ -643,7 +698,7 @@ export default function Interface() {
               onClick={handleUnmergeMeshes}
               className="bg-red-500/20 hover:bg-red-500/40 text-red-500 border border-red-500/50 rounded-xl h-14 px-6 font-mono uppercase tracking-wider text-sm transition-all backdrop-blur-2xl shadow-2xl active:scale-95"
             >
-              <Combine size={20} className="mr-2" />
+              <GitMerge size={20} className="mr-2" />
               Unmerge Models
             </Button>
           )}
