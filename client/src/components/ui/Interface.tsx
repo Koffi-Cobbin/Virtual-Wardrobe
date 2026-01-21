@@ -280,17 +280,15 @@ const handleLoadWearable = (item: WearableItem) => {
       return;
     }
 
-    // Mark as unloaded
+    // Mark as unloaded in local state
     setWearableItems(prev => 
       prev.map(w => w.id === item.id ? { ...w, isLoaded: false } : w)
     );
 
-    // If this is the current wearable, clear it
-    if (wearableUrl === item.url) {
-      removeWearable();
-    }
+    // Call the store's removeWearable with the specific ID
+    removeWearable(item.id);
 
-    toast.success("Wearable unloaded", {
+    toast.success(`${item.name} removed from scene`, {
       icon: <Trash2 className="text-orange-500" size={16} />
     });
   };
