@@ -438,24 +438,6 @@ export default function Interface() {
               
               <ScrollArea className="flex-1 px-8">
                 <div className="space-y-10 py-4">
-                  {/* Save Look Section */}
-                  <section className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 text-primary">
-                        <Combine size={20} className="animate-pulse" />
-                        <h3 className="font-display text-lg font-bold uppercase tracking-widest">Save this look</h3>
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={handleMergeMeshes}
-                      className="w-full bg-primary/20 hover:bg-primary text-primary hover:text-white border border-primary/30 h-12 font-bold tracking-widest transition-all duration-300"
-                    >
-                      {isMerged ? 'SAVED' : 'SAVE LOOK'}
-                    </Button>
-                  </section>
-
-                  <Separator className="bg-white/5" />
-
                   {/* Avatar Section */}
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
