@@ -40,8 +40,9 @@ export default function Landing() {
                 <SheetContent side="right" className="w-[320px] sm:w-[420px] border-l border-white/10 bg-black/95 backdrop-blur-3xl text-white p-0">
                   <div className="h-full flex flex-col">
                     <SheetHeader className="p-8 pb-4 text-left">
+                      <p className="sr-only">Navigation Menu</p>
                       <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">
-                        Navigation Menu
+                        Menu
                       </p>
                     </SheetHeader>
                     
