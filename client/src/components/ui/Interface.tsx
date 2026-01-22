@@ -19,7 +19,7 @@ import WearablePreview from './WearablePreview';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from 'three';
 
-import defaultObject from '@assets/object_0_1766404645511.glb?url';
+import defaultObject from '/assets/wearables/default_wearable.glb?url';
 
 interface WearableItem {
   id: string;
