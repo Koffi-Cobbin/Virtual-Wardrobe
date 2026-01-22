@@ -174,22 +174,31 @@ export default function Landing() {
         {/* Video Background */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 z-10"></div>
-          <div className="w-full h-full bg-gradient-to-br from-gray-900 via-black to-black">
-            {/* Animated background effect simulating video */}
-            <div className="absolute inset-0 opacity-30">
-              <div
-                className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse"
-                style={{ backgroundColor: "rgba(255, 173, 51, 0.2)" }}
-              ></div>
-              <div
-                className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse"
-                style={{
-                  backgroundColor: "rgba(255, 173, 51, 0.1)",
-                  animationDelay: "1s",
-                }}
-              ></div>
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="/videos/hero.mp4" type="video/mp4" />
+            <div className="w-full h-full bg-gradient-to-br from-gray-900 via-black to-black">
+              {/* Animated background effect simulating video */}
+              <div className="absolute inset-0 opacity-30">
+                <div
+                  className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse"
+                  style={{ backgroundColor: "rgba(255, 173, 51, 0.2)" }}
+                ></div>
+                <div
+                  className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse"
+                  style={{
+                    backgroundColor: "rgba(255, 173, 51, 0.1)",
+                    animationDelay: "1s",
+                  }}
+                ></div>
+              </div>
             </div>
-          </div>
+          </video>
         </div>
 
         {/* Hero Content */}
