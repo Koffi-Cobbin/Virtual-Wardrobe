@@ -383,6 +383,11 @@ export default function Interface() {
     });
   };
 
+  const [avatarItems, setAvatarItems] = useState([
+    { id: 'male', name: 'Male Avatar', url: '/assets/avatars/default_avatar.glb' },
+    { id: 'female', name: 'Female Avatar', url: '/assets/avatars/female_avatar_1.glb' }
+  ]);
+
   return (
     <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-6">
       
@@ -450,11 +455,37 @@ export default function Interface() {
                       </div>
                     )}
 
-                    {/* Avatar Preview Card */}
-                    {avatarUrl && (
+                    {/* Avatar Preview Grid */}
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      {avatarItems.map((item) => (
+                        <div 
+                          key={item.id}
+                          className="relative cursor-pointer group/avatar"
+                          onClick={() => setAvatarUrl(item.url, false)}
+                        >
+                          <WearablePreview 
+                            url={item.url}
+                            isSelected={avatarUrl === item.url}
+                          />
+                          <div className="mt-2 text-center">
+                            <div className="font-mono font-bold uppercase tracking-wider text-[10px] text-primary truncate">
+                              {item.name}
+                            </div>
+                            {avatarUrl === item.url && (
+                              <div className="text-[8px] text-primary font-mono flex items-center justify-center gap-1 mt-1">
+                                <CheckCircle2 size={8} />
+                                <span>ACTIVE</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {hasUploadedAvatar && avatarUrl && !avatarItems.some(a => a.url === avatarUrl) && (
                       <div className="mt-4">
                         <div className="text-[10px] font-mono uppercase tracking-widest text-gray-500 mb-2">
-                          Current Avatar
+                          Current Uploaded Avatar
                         </div>
                         <div className="relative cursor-default group/avatar">
                           <WearablePreview 
@@ -464,7 +495,7 @@ export default function Interface() {
                           <div className="mt-2 flex items-center justify-between gap-2">
                             <div className="flex-1 min-w-0">
                               <div className="font-mono font-bold uppercase tracking-wider text-xs text-primary truncate">
-                                {hasUploadedAvatar ? 'Custom Avatar' : 'Default Body'}
+                                Custom Avatar
                               </div>
                               <div className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5 flex-wrap">
                                 <CheckCircle2 size={10} className="text-primary" />
