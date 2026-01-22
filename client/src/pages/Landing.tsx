@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, X, ArrowRight, DoorOpen, User } from "lucide-react";
+import { Menu, X, ArrowRight, DoorOpen, User, LogIn, UserPlus, LogOut, Compass, BookOpen, UserCircle } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -9,10 +9,17 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
+// Mock auth hook since we couldn't find use-auth.tsx
+// In a real app, this would come from a proper auth context
+const useAuth = () => {
+  return { user: null, isLoading: false };
+};
+
 export default function Landing() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,42 +85,75 @@ export default function Landing() {
                       </p>
                     </SheetHeader>
 
-                    <div className="flex-1 px-8 py-4 space-y-6">
+                    <div className="flex-1 px-8 py-4 space-y-2">
                       <a
-                        href="#apparel-fit"
-                        className="block hover:text-white py-2 transition-colors text-xl font-medium"
+                        href="/room"
+                        className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
                         style={{ color: "#999" }}
                       >
-                        Apparel Fit
+                        <DoorOpen size={24} />
+                        Your Room
                       </a>
                       <a
-                        href="#safety"
-                        className="block hover:text-white py-2 transition-colors text-xl font-medium"
+                        href="#explore"
+                        className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
                         style={{ color: "#999" }}
                       >
-                        Safety
+                        <Compass size={24} />
+                        Explore
                       </a>
                       <a
-                        href="#ergonomics"
-                        className="block hover:text-white py-2 transition-colors text-xl font-medium"
+                        href="#fit-guide"
+                        className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
                         style={{ color: "#999" }}
                       >
-                        Ergonomics
+                        <BookOpen size={24} />
+                        Fit Guide
                       </a>
-                      <a
-                        href="#company"
-                        className="block hover:text-white py-2 transition-colors text-xl font-medium"
-                        style={{ color: "#999" }}
-                      >
-                        Company
-                      </a>
-                      <a
-                        href="#contact"
-                        className="block hover:text-white py-2 transition-colors text-xl font-medium"
-                        style={{ color: "#999" }}
-                      >
-                        Contact
-                      </a>
+
+                      <div className="py-2">
+                        <div className="h-px bg-white/10 w-full mb-4 mt-2" />
+                        
+                        {!user ? (
+                          <>
+                            <a
+                              href="/auth?mode=login"
+                              className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
+                              style={{ color: "#999" }}
+                            >
+                              <LogIn size={24} />
+                              Login
+                            </a>
+                            <a
+                              href="/auth?mode=signup"
+                              className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
+                              style={{ color: "#999" }}
+                            >
+                              <UserPlus size={24} />
+                              Signup
+                            </a>
+                          </>
+                        ) : (
+                          <>
+                            <a
+                              href="/profile"
+                              className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
+                              style={{ color: "#999" }}
+                            >
+                              <UserCircle size={24} />
+                              Profile
+                            </a>
+                            <button
+                              onClick={() => { /* Logout logic */ }}
+                              className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium w-full text-left"
+                              style={{ color: "#999" }}
+                            >
+                              <LogOut size={24} />
+                              Logout
+                            </button>
+                          </>
+                        )}
+                      </div>
 
                       <div className="pt-8">
                         <Button

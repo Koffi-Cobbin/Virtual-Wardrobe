@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/store';
 import { Shirt, User, Upload, Box, CheckCircle2, Zap, Combine, Trash2, XCircle, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
