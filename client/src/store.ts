@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 // Import default assets
-import defaultPerson from '@assets/person_0_1766404645511.glb?url';
+import defaultPerson from '/assets/avatars/default_avatar.glb?url';
 
 interface Position {
   x: number;
