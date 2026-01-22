@@ -591,7 +591,7 @@ export default function Interface() {
                       </div>
                       
                       <ScrollArea className="h-[400px] pr-4">
-                        <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
                           {wearableItems.map((item) => (
                             <div
                               key={item.id}
@@ -666,29 +666,22 @@ export default function Interface() {
                                   </div>
                                 </div>
                                 
-                                <div className="mt-2 flex items-start justify-between gap-2">
-                                  <div className="flex-1 min-w-0">
-                                    <div className="font-mono font-bold uppercase tracking-wider text-xs group-hover/item:text-primary transition-colors truncate">
-                                      {item.name}
-                                    </div>
-                                    <div className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5 flex-wrap">
-                                      {item.isDefault ? (
-                                        <>
-                                          <CheckCircle2 size={10} className="text-green-500" />
-                                          <span>DEFAULT</span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <CheckCircle2 size={10} className="text-primary" />
-                                          <span>CUSTOM</span>
-                                        </>
-                                      )}
-                                      {item.isLoaded && (
-                                        <span className="ml-1 px-1.5 py-0.5 bg-primary/20 text-primary rounded text-[8px] font-bold">
-                                          LOADED
-                                        </span>
-                                      )}
-                                    </div>
+                                <div className="mt-2 text-center">
+                                  <div className="font-mono font-bold uppercase tracking-wider text-[10px] text-white truncate">
+                                    {item.name}
+                                  </div>
+                                  <div className="flex items-center justify-center gap-1.5 mt-1">
+                                    {item.isLoaded ? (
+                                      <div className="flex items-center gap-1 text-[8px] text-primary font-mono">
+                                        <CheckCircle2 size={8} />
+                                        <span>LOADED</span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1 text-[8px] text-gray-500 font-mono">
+                                        <Box size={8} />
+                                        <span>READY</span>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
