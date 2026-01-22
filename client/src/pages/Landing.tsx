@@ -173,7 +173,7 @@ export default function Landing() {
       <section className="relative h-screen flex items-center overflow-hidden">
         {/* Video Background - Positioned Right */}
         <div className="absolute inset-0 z-0 flex justify-end">
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent z-10"></div>
           <div className="h-full aspect-[9/16] relative">
             <video
               autoPlay
@@ -187,8 +187,8 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Hero Content - Shifted Left */}
-        <div className="relative z-20 px-4 sm:px-12 lg:px-24 w-full max-w-7xl mx-auto">
+        {/* Hero Content - Centered Container for better alignment */}
+        <div className="relative z-20 px-4 sm:px-12 lg:px-24 w-full max-w-7xl mx-auto flex justify-start">
           <div className="max-w-2xl">
             <div className="mb-6">
               <h2 className="text-xs sm:text-sm font-medium tracking-widest uppercase mb-2">
