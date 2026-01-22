@@ -170,122 +170,110 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Video Background */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 z-10"></div>
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-          >
-            <source src="/videos/hero.mp4" type="video/mp4" />
-            <div className="w-full h-full bg-gradient-to-br from-gray-900 via-black to-black">
-              {/* Animated background effect simulating video */}
-              <div className="absolute inset-0 opacity-30">
-                <div
-                  className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse"
-                  style={{ backgroundColor: "rgba(255, 173, 51, 0.2)" }}
-                ></div>
-                <div
-                  className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse"
-                  style={{
-                    backgroundColor: "rgba(255, 173, 51, 0.1)",
-                    animationDelay: "1s",
-                  }}
-                ></div>
-              </div>
-            </div>
-          </video>
+      <section className="relative h-screen flex items-center overflow-hidden">
+        {/* Video Background - Positioned Right */}
+        <div className="absolute inset-0 z-0 flex justify-end">
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10"></div>
+          <div className="h-full aspect-[9/16] relative">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            >
+              <source src="/videos/hero_portrait.mp4" type="video/mp4" />
+            </video>
+          </div>
         </div>
 
-        {/* Hero Content */}
-        <div className="relative z-20 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-          <div className="mb-6">
-            <h2 className="text-sm sm:text-base font-medium tracking-widest uppercase mb-2">
-              Step into Drape<span style={{ color: "#FFAD33" }}>Room</span>
-            </h2>
-          </div>
+        {/* Hero Content - Shifted Left */}
+        <div className="relative z-20 px-4 sm:px-12 lg:px-24 w-full max-w-7xl mx-auto">
+          <div className="max-w-2xl">
+            <div className="mb-6">
+              <h2 className="text-xs sm:text-sm font-medium tracking-widest uppercase mb-2">
+                Step into Drape<span style={{ color: "#FFAD33" }}>Room</span>
+              </h2>
+            </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-8 tracking-tight">
-            Where your style comes alive.
-          </h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
+              Where your style comes alive.
+            </h1>
 
-          <p className="text-lg sm:text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Try on outfits, mix looks, and see how they fit on your avatar in 3D
-            <br /> — before you buy.
-          </p>
+            <p className="text-base sm:text-lg text-gray-300 mb-6 leading-relaxed">
+              Try on outfits, mix looks, and see how they fit on your avatar in 3D
+              <br /> — before you buy.
+            </p>
 
-          <p className="text-2xl sm:text-3xl md:text-4xl font-bold mb-12 tracking-tight">
-            <span style={{ color: "#FFAD33" }}>See it.</span>{" "}
-            <span className="text-white">Love it.</span>{" "}
-            <span style={{ color: "#FFAD33" }}>Wear it.</span>
-          </p>
+            <p className="text-xl sm:text-2xl md:text-3xl font-bold mb-10 tracking-tight">
+              <span style={{ color: "#FFAD33" }}>See it.</span>{" "}
+              <span className="text-white">Love it.</span>{" "}
+              <span style={{ color: "#FFAD33" }}>Wear it.</span>
+            </p>
 
-          {/* CTA Button */}
-          <div className="flex justify-center">
-            <button
-              onClick={() => (window.location.href = "/room")}
-              className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 text-base font-medium border-2 rounded-lg transition-all duration-300 overflow-hidden"
-              style={{
-                borderColor: "#FFAD33",
-                backgroundColor: "transparent",
-                color: "#fff",
-                minWidth: "220px",
-              }}
-              onMouseEnter={(e) => {
-                setIsButtonHovered(true);
-                e.currentTarget.style.borderColor = "#fff";
-                e.currentTarget.style.color = "#FFAD33";
-                e.currentTarget.style.transform = "translateY(-2px)";
-              }}
-              onMouseLeave={(e) => {
-                setIsButtonHovered(false);
-                e.currentTarget.style.borderColor = "#FFAD33";
-                e.currentTarget.style.color = "#fff";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              {/* Text - fades out on hover */}
-              <span
-                className={`relative z-10 transition-opacity duration-300 ${
-                  isButtonHovered ? "opacity-0" : "opacity-100"
-                }`}
+            {/* CTA Button */}
+            <div className="flex justify-start">
+              <button
+                onClick={() => (window.location.href = "/room")}
+                className="group relative inline-flex items-center justify-center gap-3 px-6 py-3 text-sm font-medium border-2 rounded-lg transition-all duration-300 overflow-hidden"
+                style={{
+                  borderColor: "#FFAD33",
+                  backgroundColor: "transparent",
+                  color: "#fff",
+                  minWidth: "180px",
+                }}
+                onMouseEnter={(e) => {
+                  setIsButtonHovered(true);
+                  e.currentTarget.style.borderColor = "#fff";
+                  e.currentTarget.style.color = "#FFAD33";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  setIsButtonHovered(false);
+                  e.currentTarget.style.borderColor = "#FFAD33";
+                  e.currentTarget.style.color = "#fff";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
               >
-                Enter Your Room
-              </span>
-
-              {/* Animation Container - shows on hover */}
-              <div
-                className={`absolute inset-0 flex items-center justify-center gap-2 transition-opacity duration-300 ${
-                  isButtonHovered ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                {/* Person Icon - walks toward door */}
-                <User
-                  className={`transition-all duration-700 ${
-                    isButtonHovered
-                      ? "translate-x-0 opacity-100"
-                      : "-translate-x-12 opacity-0"
+                {/* Text - fades out on hover */}
+                <span
+                  className={`relative z-10 transition-opacity duration-300 ${
+                    isButtonHovered ? "opacity-0" : "opacity-100"
                   }`}
-                  size={20}
-                  style={{ color: "#FFAD33" }}
-                />
+                >
+                  Enter Your Room
+                </span>
 
-                {/* Door Icon - opens */}
-                <DoorOpen
-                  className={`transition-all duration-500 ${
-                    isButtonHovered
-                      ? "opacity-100 rotate-0 scale-100"
-                      : "opacity-0 rotate-12 scale-75"
+                {/* Animation Container - shows on hover */}
+                <div
+                  className={`absolute inset-0 flex items-center justify-center gap-2 transition-opacity duration-300 ${
+                    isButtonHovered ? "opacity-100" : "opacity-0"
                   }`}
-                  size={20}
-                  style={{ color: "#FFAD33" }}
-                />
-              </div>
-            </button>
+                >
+                  {/* Person Icon - walks toward door */}
+                  <User
+                    className={`transition-all duration-700 ${
+                      isButtonHovered
+                        ? "translate-x-0 opacity-100"
+                        : "-translate-x-12 opacity-0"
+                    }`}
+                    size={18}
+                    style={{ color: "#FFAD33" }}
+                  />
+
+                  {/* Door Icon - opens */}
+                  <DoorOpen
+                    className={`transition-all duration-500 ${
+                      isButtonHovered
+                        ? "opacity-100 rotate-0 scale-100"
+                        : "opacity-0 rotate-12 scale-75"
+                    }`}
+                    size={18}
+                    style={{ color: "#FFAD33" }}
+                  />
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </section>
