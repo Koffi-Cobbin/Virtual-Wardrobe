@@ -395,11 +395,11 @@ const handleLoadWearable = (item: WearableItem) => {
           <SheetContent side="left" className="w-[320px] sm:w-[420px] border-r border-white/10 bg-black/95 backdrop-blur-3xl text-white p-0">
             <div className="h-full flex flex-col">
               <SheetHeader className="p-8 pb-4">
-                <SheetTitle className="text-3xl font-display font-bold text-white tracking-widest uppercase italic">
-                  Wardrobe
+                <SheetTitle className="text-3xl font-bold text-white tracking-tight">
+                  Drape<span style={{ color: '#FFAD33' }}>Room</span>
                 </SheetTitle>
                 <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">
-                  Multi-Load System v4.0
+                  Wardrobe Multi-Load System v4.0
                 </p>
               </SheetHeader>
               
@@ -670,8 +670,8 @@ const handleLoadWearable = (item: WearableItem) => {
         
         {/* HUD Overlay */}
         <div className="text-right flex-1">
-          <h1 className="text-4xl font-display font-bold text-white uppercase tracking-tighter italic">
-            Virtual <span className="text-primary">Fit</span>
+          <h1 className="text-4xl font-bold text-white tracking-tight">
+            Drape<span style={{ color: '#FFAD33' }}>Room</span>
           </h1>
           <div className="flex items-center justify-end gap-2">
             <p className="text-[10px] text-gray-600 font-mono tracking-[0.4em] uppercase">MULTI-LOAD v4.0</p>
