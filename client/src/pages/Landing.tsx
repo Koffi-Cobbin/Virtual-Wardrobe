@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowRight, DoorOpen, User, Shirt } from 'lucide-react';
+import { Menu, X, ArrowRight, DoorOpen, User, House } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 
@@ -34,7 +34,7 @@ export default function Landing() {
               <Sheet>
                 <SheetTrigger asChild>
                   <Button size="icon" variant="ghost" className="hover:text-white transition-colors p-0 h-auto w-auto bg-transparent border-none">
-                    <Shirt size={32} style={{ color: '#999' }} />
+                    <House size={32} style={{ color: '#999' }} />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[320px] sm:w-[420px] border-l border-white/10 bg-black/95 backdrop-blur-3xl text-white p-0">
