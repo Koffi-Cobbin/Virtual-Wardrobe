@@ -34,7 +34,7 @@ export default function Landing() {
               <Sheet>
                 <SheetTrigger asChild>
                   <Button size="icon" variant="ghost" className="hover:text-white transition-colors p-0 h-auto w-auto bg-transparent border-none">
-                    <House className="!w-[100px] !h-[100px]" style={{ color: '#999' }} />
+                    <House className="w-14 h-14" style={{ color: '#999', width: '3.5rem', height: '3.5rem' }} />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[320px] sm:w-[420px] border-l border-white/10 bg-black/95 backdrop-blur-3xl text-white p-0">
