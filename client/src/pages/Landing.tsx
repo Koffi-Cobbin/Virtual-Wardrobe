@@ -47,13 +47,13 @@ export default function Landing() {
                       padding: 0,
                       background: 'transparent',
                       border: 'none',
-                      height: '56px',
-                      width: '56px'
+                      height: '32px',
+                      width: '32px'
                     }}
                   >
                     <svg 
-                      width="56"    
-                      height="56"   
+                      width="32"    
+                      height="32"   
                       viewBox="0 0 24 24" 
                       fill="none" 
                       stroke="#FFAD33" 
