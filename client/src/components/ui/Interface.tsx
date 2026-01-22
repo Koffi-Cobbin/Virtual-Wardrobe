@@ -119,7 +119,9 @@ export default function Interface() {
     setShouldMerge,
     isMerged,
     unmerge,
-    selectedObjectId
+    selectedObjectId,
+    savedLooks,
+    deleteSavedLook
   } = useStore();
 
   // Mock auth check - in real app would come from useAuth
@@ -548,6 +550,59 @@ export default function Interface() {
                         </div>
                       </div>
                     )}
+                  </section>
+
+                  <Separator className="bg-white/5" />
+
+                  {/* Saved Looks Section */}
+                  <section className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-primary">
+                        <CheckCircle2 size={20} className="animate-pulse" />
+                        <h3 className="font-display text-lg font-bold uppercase tracking-widest">Saved looks</h3>
+                      </div>
+                      <div className="text-[10px] font-mono text-gray-500">
+                        {savedLooks.length} SAVED
+                      </div>
+                    </div>
+
+                    <ScrollArea className="h-[250px] pr-4">
+                      {savedLooks.length === 0 ? (
+                        <div className="p-8 border border-dashed border-white/5 rounded-2xl text-center">
+                          <p className="text-[10px] font-mono text-gray-600 uppercase">No looks saved yet</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                          {savedLooks.map((look) => (
+                            <div key={look.id} className="group/look relative">
+                              <div 
+                                className="cursor-pointer"
+                                onClick={() => setAvatarUrl(look.url, true)}
+                              >
+                                <WearablePreview 
+                                  url={look.url}
+                                  isSelected={avatarUrl === look.url}
+                                />
+                                <div className="mt-2 text-center">
+                                  <div className="font-mono font-bold uppercase tracking-wider text-[10px] text-primary truncate">
+                                    {look.name}
+                                  </div>
+                                </div>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteSavedLook(look.id);
+                                }}
+                                className="absolute top-1 right-1 p-1 bg-black/60 rounded-md opacity-0 group-hover/look:opacity-100 transition-opacity hover:text-red-500"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </ScrollArea>
                   </section>
 
                   <Separator className="bg-white/5" />

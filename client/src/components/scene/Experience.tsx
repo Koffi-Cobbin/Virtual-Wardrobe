@@ -7,6 +7,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { toast } from 'sonner';
 
+import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+
 function Model({ 
   id, 
   url, 
@@ -303,6 +305,33 @@ function SceneContent({ setControlsEnabled }: { setControlsEnabled: (val: boolea
           mergedGroupRef.current.add(mergedMesh);
           mergedGroupRef.current.visible = true;
           setIsMerged(true);
+          
+          // Export the merged mesh
+          const exporter = new GLTFExporter();
+          exporter.parse(
+            mergedMesh,
+            (result) => {
+              const output = result instanceof ArrayBuffer ? result : JSON.stringify(result);
+              const blob = new Blob([output], { type: 'model/gltf-binary' });
+              const url = URL.createObjectURL(blob);
+              const finalUrl = `${url}#.glb`;
+              
+              useStore.getState().addSavedLook({
+                id: `look-${Date.now()}`,
+                name: `Look ${new Date().toLocaleTimeString()}`,
+                url: finalUrl,
+                timestamp: Date.now()
+              });
+              
+              toast.success("Look saved to your collection", {
+                description: "You can find it under Saved Looks"
+              });
+            },
+            (error) => {
+              console.error('Export error:', error);
+            },
+            { binary: true }
+          );
           
           toast.success("Models merged successfully", {
             description: `Combined avatar with ${visibleWearables.length} wearable(s)`

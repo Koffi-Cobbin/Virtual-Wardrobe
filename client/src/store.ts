@@ -24,9 +24,17 @@ export interface LoadedWearable {
   isVisible: boolean;
 }
 
+export interface SavedLook {
+  id: string;
+  name: string;
+  url: string;
+  timestamp: number;
+}
+
 interface AppState {
   avatarUrl: string | null;
   loadedWearables: Map<string, LoadedWearable>;
+  savedLooks: SavedLook[];
   rotationVelocity: number;
   hasUploadedAvatar: boolean;
   shouldResetCamera: boolean;
@@ -38,6 +46,8 @@ interface AppState {
   
   setAvatarUrl: (url: string | null, isUpload?: boolean) => void;
   addWearable: (id: string, url: string, name: string) => void;
+  addSavedLook: (look: SavedLook) => void;
+  deleteSavedLook: (id: string) => void;
   removeWearable: (id: string) => void;
   updateWearablePosition: (id: string, position: Position) => void;
   updateWearableRotation: (id: string, rotation: Rotation) => void;
@@ -57,6 +67,7 @@ interface AppState {
 export const useStore = create<AppState>((set, get) => ({
   avatarUrl: defaultPerson,
   loadedWearables: new Map(),
+  savedLooks: [],
   rotationVelocity: 0,
   hasUploadedAvatar: false,
   shouldResetCamera: false,
@@ -84,6 +95,18 @@ export const useStore = create<AppState>((set, get) => ({
     return { 
       loadedWearables: newWearables,
       selectedObjectId: id
+    };
+  }),
+
+  addSavedLook: (look) => set((state) => ({
+    savedLooks: [look, ...state.savedLooks]
+  })),
+
+  deleteSavedLook: (id) => set((state) => {
+    const look = state.savedLooks.find(l => l.id === id);
+    if (look) URL.revokeObjectURL(look.url);
+    return {
+      savedLooks: state.savedLooks.filter(l => l.id !== id)
     };
   }),
   
