@@ -154,6 +154,7 @@ export default function Landing() {
                           </>
                         )}
                       </div>
+                    </div>
 
                     <div className="p-8 mt-auto border-t border-white/5">
                       <p className="text-xs text-gray-600 font-mono uppercase tracking-widest">
