@@ -33,10 +33,10 @@ export default function Landing() {
             <div>
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button size="icon" variant="ghost" className="hover:text-white transition-colors p-0 h-auto w-auto bg-transparent border-none">
+                  <Button size="icon" variant="ghost" className="hover:opacity-80 transition-opacity p-0 h-auto w-auto bg-transparent border-none">
                     <svg 
-                      width="40" 
-                      height="40" 
+                      width="56" 
+                      height="56" 
                       viewBox="0 0 24 24" 
                       fill="none" 
                       stroke="#FFAD33" 
