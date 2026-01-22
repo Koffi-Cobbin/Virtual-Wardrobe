@@ -398,7 +398,7 @@ export default function Interface() {
                   Drape<span style={{ color: '#FFAD33' }}>Room</span>
                 </SheetTitle>
                 <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">
-                  Wardrobe Multi-Load System v4.0
+                  Your style. Your fits. Your space.
                 </p>
               </SheetHeader>
               
