@@ -2,12 +2,20 @@ import { Canvas, useLoader } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
 import { Suspense, useMemo } from 'react';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import * as THREE from 'three';
 
 function Model({ url }: { url: string }) {
   const gltf = useLoader(GLTFLoader, url);
   const scene = useMemo(() => {
     if (!gltf) return null;
-    return gltf.scene.clone();
+    const cloned = gltf.scene.clone();
+    
+    // Center the model in the preview
+    const box = new THREE.Box3().setFromObject(cloned);
+    const center = box.getCenter(new THREE.Vector3());
+    cloned.position.sub(center);
+    
+    return cloned;
   }, [gltf]);
 
   if (!scene) return null;
