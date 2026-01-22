@@ -111,7 +111,7 @@ export default function Landing() {
                         Fit Guide
                       </a>
 
-                      <div className="py-2">
+                      <div className="pt-4">
                         <div className="h-px bg-white/10 w-full mb-4 mt-2" />
                         
                         {!user ? (
@@ -154,17 +154,6 @@ export default function Landing() {
                           </>
                         )}
                       </div>
-
-                      <div className="pt-8">
-                        <Button
-                          onClick={() => (window.location.href = "/room")}
-                          className="w-full py-6 text-lg font-bold rounded-xl"
-                          style={{ backgroundColor: "#FFAD33", color: "black" }}
-                        >
-                          Enter Fitting Room
-                        </Button>
-                      </div>
-                    </div>
 
                     <div className="p-8 mt-auto border-t border-white/5">
                       <p className="text-xs text-gray-600 font-mono uppercase tracking-widest">
