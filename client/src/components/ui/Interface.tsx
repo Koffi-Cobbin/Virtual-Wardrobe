@@ -661,8 +661,8 @@ export default function Interface() {
         
         {/* HUD Overlay */}
         <div className="text-right flex-1">
-          <h1 className="text-4xl font-display font-bold text-white uppercase tracking-tighter italic">
-            Virtual <span className="text-primary">Fit</span>
+          <h1 className="text-4xl font-display font-bold text-white tracking-tighter italic">
+            Drape<span style={{ color: '#FFAD33' }}>Room</span>
           </h1>
           <div className="flex items-center justify-end gap-2">
             <p className="text-[10px] text-gray-600 font-mono tracking-[0.4em] uppercase">DRAG TO MOVE</p>
