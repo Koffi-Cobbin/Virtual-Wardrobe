@@ -92,7 +92,7 @@ export default function Landing() {
                         style={{ color: "#999" }}
                       >
                         <DoorOpen size={24} />
-                        Your Room
+                        Enter your room
                       </a>
                       <a
                         href="#explore"
@@ -241,7 +241,7 @@ export default function Landing() {
                     isButtonHovered ? "opacity-0" : "opacity-100"
                   }`}
                 >
-                  Enter Your Room
+                  Enter your room
                 </span>
 
                 {/* Animation Container - shows on hover */}

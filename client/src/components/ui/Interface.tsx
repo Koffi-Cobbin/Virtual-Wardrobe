@@ -436,12 +436,30 @@ export default function Interface() {
               
               <ScrollArea className="flex-1 px-8">
                 <div className="space-y-10 py-4">
+                  {/* Save Look Section */}
+                  <section className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-primary">
+                        <Combine size={20} className="animate-pulse" />
+                        <h3 className="font-display text-lg font-bold uppercase tracking-widest">Save this look</h3>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={handleMergeMeshes}
+                      className="w-full bg-primary/20 hover:bg-primary text-primary hover:text-white border border-primary/30 h-12 font-bold tracking-widest transition-all duration-300"
+                    >
+                      {isMerged ? 'SAVED' : 'SAVE LOOK'}
+                    </Button>
+                  </section>
+
+                  <Separator className="bg-white/5" />
+
                   {/* Avatar Section */}
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 text-primary">
                         <User size={20} className="animate-pulse" />
-                        <h3 className="font-display text-lg font-bold uppercase tracking-widest">Base Body</h3>
+                        <h3 className="font-display text-lg font-bold uppercase tracking-widest">Mirror view</h3>
                       </div>
                       {hasUploadedAvatar && !isUploadingAvatar && <CheckCircle2 size={16} className="text-green-500" />}
                     </div>
@@ -539,7 +557,7 @@ export default function Interface() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 text-primary">
                         <Box size={20} className="animate-pulse" />
-                        <h3 className="font-display text-lg font-bold uppercase tracking-widest">Loadout</h3>
+                        <h3 className="font-display text-lg font-bold uppercase tracking-widest">Add to room</h3>
                       </div>
                       <div className="text-[10px] font-mono text-gray-500 space-x-2">
                         <span className="text-primary">{loadedWearables.length} LOADED</span>
@@ -556,7 +574,7 @@ export default function Interface() {
                         >
                           <Upload size={28} className={`${isUploadingWearable ? 'text-primary' : 'text-gray-500'} transition-colors`} />
                           <div className="text-center">
-                            <span className="text-sm font-bold block">{isUploadingWearable ? 'VALIDATING...' : 'ADD WEARABLE'}</span>
+                            <span className="text-sm font-bold block">{isUploadingWearable ? 'VALIDATING...' : 'Switch outfits'}</span>
                             <span className="text-[10px] text-gray-500 font-mono">.GLB ONLY</span>
                           </div>
                           <Input 
@@ -584,7 +602,7 @@ export default function Interface() {
                     {/* Wearables List */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-gray-500">
-                        <span>Available Items</span>
+                        <span>Try another room</span>
                         {wearableItems.length > 1 && (
                           <span className="text-primary">{wearableItems.length - 1} Custom</span>
                         )}
@@ -610,7 +628,7 @@ export default function Interface() {
                                 >
                                   <WearablePreview 
                                     url={item.url}
-                                    isSelected={item.isLoaded}
+                                    isSelected={!!item.isLoaded}
                                   />
                                   
                                   {/* Menu Button */}
@@ -791,7 +809,7 @@ export default function Interface() {
               disabled={!avatarUrl || loadedWearables.length === 0}
             >
               <Combine size={20} className="mr-2" />
-              Merge Models
+              Save this look
             </Button>
           ) : (
             <Button 
@@ -799,7 +817,7 @@ export default function Interface() {
               className="bg-red-500/20 hover:bg-red-500/40 text-red-500 border border-red-500/50 rounded-xl h-14 px-6 font-mono uppercase tracking-wider text-sm transition-all backdrop-blur-2xl shadow-2xl active:scale-95"
             >
               <Combine size={20} className="mr-2" />
-              Unmerge Models
+              Mirror view
             </Button>
           )}
         </div>
