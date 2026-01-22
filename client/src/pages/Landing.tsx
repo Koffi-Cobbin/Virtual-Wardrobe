@@ -172,7 +172,7 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="relative h-screen flex items-center overflow-hidden">
         {/* Video Background - Positioned Right */}
-        <div className="absolute inset-0 z-0 flex justify-end">
+        <div className="absolute inset-0 z-0 flex justify-end lg:pr-[5%]">
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent z-10"></div>
           <div className="h-full aspect-[9/16] relative">
             <video
