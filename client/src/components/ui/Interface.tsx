@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '@/store';
-import { Shirt, User, Upload, Box, CheckCircle2, Zap, Combine, Trash2, XCircle, MoreVertical, GitMerge } from 'lucide-react';
+import { Shirt, User, Upload, Box, CheckCircle2, Zap, Combine, Trash2, XCircle, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -87,7 +87,7 @@ async function validateGLTFRig(file: File): Promise<{ isValid: boolean; message:
           }
         },
         undefined,
-        (err) => {
+        () => {
           resolve({
             isValid: false,
             message: 'Failed to load GLB file'
@@ -111,16 +111,15 @@ async function validateGLTFRig(file: File): Promise<{ isValid: boolean; message:
 export default function Interface() {
   const { 
     setAvatarUrl, 
-    setWearableUrl, 
     removeWearable,
     avatarUrl, 
-    wearableUrl,
     hasUploadedAvatar,
     resetCamera,
-    resetWearablePosition,
+    resetWearableTransform,
     setShouldMerge,
     isMerged,
-    unmerge
+    unmerge,
+    selectedObjectId
   } = useStore();
   
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -237,7 +236,7 @@ export default function Interface() {
     event.target.value = '';
   };
 
-const handleLoadWearable = (item: WearableItem) => {
+  const handleLoadWearable = (item: WearableItem) => {
     // Check if already loaded
     if (item.isLoaded) {
       toast.error("Wearable already loaded", {
@@ -259,7 +258,7 @@ const handleLoadWearable = (item: WearableItem) => {
       prev.map(w => w.id === item.id ? { ...w, isLoaded: true } : w)
     );
 
-    // Add to the store's loadedWearables Map (this is what Experience.tsx uses!)
+    // Add to the store's loadedWearables Map
     useStore.getState().addWearable(item.id, item.url, item.name);
     
     toast.success(`${item.name} loaded`, {
@@ -374,7 +373,7 @@ const handleLoadWearable = (item: WearableItem) => {
       prev.map(w => ({ ...w, isLoaded: false }))
     );
 
-    removeWearable();
+    useStore.getState().clearAllWearables();
 
     toast.success(`Unloaded ${loadedWearables.length} wearable${loadedWearables.length > 1 ? 's' : ''}`, {
       icon: <Trash2 className="text-orange-500" size={16} />
@@ -394,7 +393,7 @@ const handleLoadWearable = (item: WearableItem) => {
           </SheetTrigger>
           <SheetContent side="left" className="w-[320px] sm:w-[420px] border-r border-white/10 bg-black/95 backdrop-blur-3xl text-white p-0">
             <div className="h-full flex flex-col">
-              <SheetHeader className="p-8 pb-4">
+              <SheetHeader className="p-8 pb-4 text-left">
                 <SheetTitle className="text-3xl font-bold text-white tracking-tight">
                   Drape<span style={{ color: '#FFAD33' }}>Room</span>
                 </SheetTitle>
@@ -599,28 +598,22 @@ const handleLoadWearable = (item: WearableItem) => {
                   <section className="space-y-3">
                     <h3 className="font-display text-sm font-bold uppercase tracking-widest text-primary">Controls</h3>
                     
-                    {loadedWearables.length > 0 && !isMerged && (
-                      <Button 
-                        onClick={handleUnloadAll}
-                        className="w-full bg-orange-500/20 hover:bg-orange-500/40 text-orange-500 border border-orange-500/50 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
-                      >
-                        <Trash2 size={16} className="mr-2" />
-                        Unload All ({loadedWearables.length})
-                      </Button>
-                    )}
-
                     <Button 
                       onClick={() => {
-                        resetWearablePosition();
-                        toast.success("All positions reset", {
-                          icon: <Zap className="text-primary" size={16} />
-                        });
+                        if (selectedObjectId && selectedObjectId !== 'avatar') {
+                          resetWearableTransform(selectedObjectId);
+                          toast.success("Transform reset", {
+                            icon: <Zap className="text-primary" size={16} />
+                          });
+                        } else {
+                          toast.error("Select a wearable first");
+                        }
                       }}
                       className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg h-10 font-mono uppercase tracking-wider text-xs transition-all"
-                      disabled={isMerged || loadedWearables.length === 0}
+                      disabled={isMerged || !selectedObjectId || selectedObjectId === 'avatar'}
                     >
                       <Zap size={16} className="mr-2" />
-                      Reset Positions
+                      Reset Transform
                     </Button>
                   </section>
 
@@ -628,23 +621,21 @@ const handleLoadWearable = (item: WearableItem) => {
                   <div className="mt-8 p-6 bg-primary/5 rounded-2xl border border-primary/20 space-y-4 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
                     <div className="flex justify-between text-[10px] font-mono text-primary italic relative">
-                      <span>MULTI-LOAD ENGINE</span>
+                      <span>SYNC ENGINE</span>
                       <span className="flex items-center gap-1">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping"/> 
-                        {isMerged ? 'MERGED' : loadedWearables.length > 0 ? 'ACTIVE' : 'STANDBY'}
+                        {isMerged ? 'MERGED' : 'ONLINE'}
                       </span>
                     </div>
                     <div className="space-y-1">
                       <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className={`h-full transition-all ${isMerged ? 'w-full bg-green-500' : loadedWearables.length > 0 ? 'w-[85%] bg-primary' : 'w-[20%] bg-gray-500'}`} />
+                        <div className={`h-full transition-all ${isMerged ? 'w-full bg-green-500' : 'w-[85%] bg-primary'}`} />
                       </div>
                     </div>
                     <p className="text-[10px] text-gray-400 leading-relaxed font-mono uppercase tracking-tighter">
                       {isMerged 
-                        ? `Merged: ${loadedWearables.length + 1} model${loadedWearables.length > 0 ? 's' : ''}. Unmerge to edit separately.`
-                        : loadedWearables.length > 0
-                        ? `${loadedWearables.length} wearable${loadedWearables.length > 1 ? 's' : ''} loaded. Add more or merge geometry.`
-                        : 'Load wearables to start. Drag models in 3D. Merge to combine.'}
+                        ? 'Models merged into single geometry. Unmerge to edit separately.'
+                        : 'Drag models in 3D space. Merge to combine geometry.'}
                     </p>
                   </div>
                 </div>
@@ -670,30 +661,29 @@ const handleLoadWearable = (item: WearableItem) => {
         
         {/* HUD Overlay */}
         <div className="text-right flex-1">
-          <h1 className="text-4xl font-bold text-white tracking-tight">
-            Drape<span style={{ color: '#FFAD33' }}>Room</span>
+          <h1 className="text-4xl font-display font-bold text-white uppercase tracking-tighter italic">
+            Virtual <span className="text-primary">Fit</span>
           </h1>
           <div className="flex items-center justify-end gap-2">
-            <p className="text-[10px] text-gray-600 font-mono tracking-[0.4em] uppercase">MULTI-LOAD v4.0</p>
+            <p className="text-[10px] text-gray-600 font-mono tracking-[0.4em] uppercase">DRAG TO MOVE</p>
           </div>
         </div>
       </div>
 
       {/* Footer Controls */}
       <div className="flex justify-end items-end pointer-events-auto">
-        <div className="mb-4 flex gap-3">
-          {/* Loaded Count Badge */}
-          {loadedWearables.length > 0 && (
-            <div className="bg-black/80 backdrop-blur-2xl border border-primary/30 rounded-xl px-4 h-14 flex items-center gap-3">
-              <Box className="text-primary" size={20} />
-              <div className="text-left">
-                <div className="text-xs font-mono text-primary font-bold">{loadedWearables.length}</div>
-                <div className="text-[10px] font-mono text-gray-500 uppercase">Loaded</div>
-              </div>
-            </div>
+        <div className="mb-4 flex flex-col items-end gap-2">
+          {loadedWearables.length > 0 && !isMerged && (
+            <Button 
+              onClick={handleUnloadAll}
+              variant="outline"
+              className="bg-black/60 hover:bg-red-500/20 text-red-400 border-red-500/30 rounded-lg h-10 px-4 font-mono uppercase tracking-wider text-xs transition-all backdrop-blur-xl"
+            >
+              <Trash2 size={14} className="mr-2" />
+              Unload All ({loadedWearables.length})
+            </Button>
           )}
-
-          {/* Merge/Unmerge Button */}
+          
           {!isMerged ? (
             <Button 
               onClick={handleMergeMeshes}
@@ -708,7 +698,7 @@ const handleLoadWearable = (item: WearableItem) => {
               onClick={handleUnmergeMeshes}
               className="bg-red-500/20 hover:bg-red-500/40 text-red-500 border border-red-500/50 rounded-xl h-14 px-6 font-mono uppercase tracking-wider text-sm transition-all backdrop-blur-2xl shadow-2xl active:scale-95"
             >
-              <GitMerge size={20} className="mr-2" />
+              <Combine size={20} className="mr-2" />
               Unmerge Models
             </Button>
           )}
