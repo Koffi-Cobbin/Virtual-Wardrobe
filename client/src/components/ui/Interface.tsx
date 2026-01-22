@@ -129,6 +129,30 @@ export default function Interface() {
   const [isUploadingWearable, setIsUploadingWearable] = useState(false);
   const [wearableItems, setWearableItems] = useState<WearableItem[]>([
     {
+      id: 'dress1',
+      name: 'Dress 1',
+      url: '/assets/wearables/dress1.glb',
+      isDefault: true,
+      isValid: true,
+      isLoaded: false
+    },
+    {
+      id: 'dress2',
+      name: 'Dress 2',
+      url: '/assets/wearables/dress2.glb',
+      isDefault: true,
+      isValid: true,
+      isLoaded: false
+    },
+    {
+      id: 'trouser',
+      name: 'Trouser',
+      url: '/assets/wearables/trouser.glb',
+      isDefault: true,
+      isValid: true,
+      isLoaded: false
+    },
+    {
       id: 'default',
       name: 'Default Wearable',
       url: defaultObject,
