@@ -35,7 +35,7 @@ export default function Landing() {
       <nav
         className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? "bg-black/90 backdrop-blur-sm" : "bg-transparent"}`}
       >
-        <div className="max-w-full mx-auto px-4 sm:px-12 lg:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-12 lg:px-24">
           <div className="flex items-center justify-between h-20">
             <div className="flex-shrink-0 flex items-center h-full">
               <h1 className="text-3xl font-bold tracking-tight leading-none">
