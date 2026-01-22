@@ -21,7 +21,7 @@ export default function Landing() {
         <div className="max-w-full mx-auto px-10 sm:px-12 lg:px-16">
           <div className="flex items-center justify-between h-20">
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight">
               <span className="text-white">Drape</span>
               <span style={{ color: '#FFAD33' }}>Room</span>
             </h1>
@@ -53,7 +53,7 @@ export default function Landing() {
                 className="hover:text-white transition-colors"
                 style={{ color: '#999' }}
               >
-                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                {isMenuOpen ? <X size={32} /> : <Menu size={32} />}
               </button>
             </div>
           </div>
