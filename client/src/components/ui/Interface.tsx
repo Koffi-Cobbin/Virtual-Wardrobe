@@ -121,6 +121,9 @@ export default function Interface() {
     unmerge,
     selectedObjectId
   } = useStore();
+
+  // Mock auth check - in real app would come from useAuth
+  const user = null; 
   
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingWearable, setIsUploadingWearable] = useState(false);
@@ -414,26 +417,38 @@ export default function Interface() {
                       {hasUploadedAvatar && !isUploadingAvatar && <CheckCircle2 size={16} className="text-green-500" />}
                     </div>
                     
-                    <div className="group relative">
-                      <Label 
-                        htmlFor="avatar-upload" 
-                        className={`flex flex-col items-center justify-center gap-4 h-36 border-2 border-dashed rounded-2xl transition-all cursor-pointer ${isUploadingAvatar ? 'border-primary bg-primary/10 animate-pulse' : 'border-white/10 hover:border-primary/50 hover:bg-white/5'}`}
-                      >
-                        <Upload size={32} className={`${isUploadingAvatar ? 'text-primary' : 'text-gray-500'} transition-colors`} />
-                        <div className="text-center">
-                          <span className="text-sm font-bold block">{isUploadingAvatar ? 'PROCESSING...' : 'UPLOAD AVATAR'}</span>
-                          <span className="text-[10px] text-gray-500 font-mono">.GLB ONLY</span>
+                    {user ? (
+                      <div className="group relative">
+                        <Label 
+                          htmlFor="avatar-upload" 
+                          className={`flex flex-col items-center justify-center gap-4 h-36 border-2 border-dashed rounded-2xl transition-all cursor-pointer ${isUploadingAvatar ? 'border-primary bg-primary/10 animate-pulse' : 'border-white/10 hover:border-primary/50 hover:bg-white/5'}`}
+                        >
+                          <Upload size={32} className={`${isUploadingAvatar ? 'text-primary' : 'text-gray-500'} transition-colors`} />
+                          <div className="text-center">
+                            <span className="text-sm font-bold block">{isUploadingAvatar ? 'PROCESSING...' : 'UPLOAD AVATAR'}</span>
+                            <span className="text-[10px] text-gray-500 font-mono">.GLB ONLY</span>
+                          </div>
+                          <Input 
+                            id="avatar-upload" 
+                            type="file" 
+                            accept=".glb" 
+                            className="hidden" 
+                            onChange={handleAvatarUpload}
+                            disabled={isUploadingAvatar}
+                          />
+                        </Label>
+                      </div>
+                    ) : (
+                      <div className="p-6 rounded-2xl border border-dashed border-white/10 bg-white/5 flex flex-col items-center text-center gap-3">
+                        <User size={32} className="text-gray-500 opacity-50" />
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Restricted Access</p>
+                          <p className="text-[10px] text-gray-500 font-mono leading-relaxed">
+                            PLEASE <a href="/auth" className="text-primary hover:underline">LOGIN</a> OR <a href="/auth" className="text-primary hover:underline">SIGNUP</a> TO UPLOAD CUSTOM MODELS
+                          </p>
                         </div>
-                        <Input 
-                          id="avatar-upload" 
-                          type="file" 
-                          accept=".glb" 
-                          className="hidden" 
-                          onChange={handleAvatarUpload}
-                          disabled={isUploadingAvatar}
-                        />
-                      </Label>
-                    </div>
+                      </div>
+                    )}
 
                     {/* Avatar Preview Card */}
                     {avatarUrl && (
@@ -478,27 +493,38 @@ export default function Interface() {
                       </div>
                     </div>
 
-                    {/* Upload New Wearable */}
-                    <div className="group relative">
-                      <Label 
-                        htmlFor="wearable-upload" 
-                        className={`flex flex-col items-center justify-center gap-4 h-32 border-2 border-dashed rounded-2xl transition-all cursor-pointer ${isUploadingWearable ? 'border-primary bg-primary/10 animate-pulse' : 'border-white/10 hover:border-primary/50 hover:bg-white/5'}`}
-                      >
-                        <Upload size={28} className={`${isUploadingWearable ? 'text-primary' : 'text-gray-500'} transition-colors`} />
-                        <div className="text-center">
-                          <span className="text-sm font-bold block">{isUploadingWearable ? 'VALIDATING...' : 'ADD WEARABLE'}</span>
-                          <span className="text-[10px] text-gray-500 font-mono">.GLB ONLY</span>
+                    {user ? (
+                      <div className="group relative">
+                        <Label 
+                          htmlFor="wearable-upload" 
+                          className={`flex flex-col items-center justify-center gap-4 h-32 border-2 border-dashed rounded-2xl transition-all cursor-pointer ${isUploadingWearable ? 'border-primary bg-primary/10 animate-pulse' : 'border-white/10 hover:border-primary/50 hover:bg-white/5'}`}
+                        >
+                          <Upload size={28} className={`${isUploadingWearable ? 'text-primary' : 'text-gray-500'} transition-colors`} />
+                          <div className="text-center">
+                            <span className="text-sm font-bold block">{isUploadingWearable ? 'VALIDATING...' : 'ADD WEARABLE'}</span>
+                            <span className="text-[10px] text-gray-500 font-mono">.GLB ONLY</span>
+                          </div>
+                          <Input 
+                            id="wearable-upload" 
+                            type="file" 
+                            accept=".glb" 
+                            className="hidden" 
+                            onChange={handleWearableUpload}
+                            disabled={isUploadingWearable}
+                          />
+                        </Label>
+                      </div>
+                    ) : (
+                      <div className="p-6 rounded-2xl border border-dashed border-white/10 bg-white/5 flex flex-col items-center text-center gap-3">
+                        <Box size={28} className="text-gray-500 opacity-50" />
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Restricted Access</p>
+                          <p className="text-[10px] text-gray-500 font-mono leading-relaxed">
+                            LOGIN TO EXPAND YOUR WARDROBE WITH CUSTOM ASSETS
+                          </p>
                         </div>
-                        <Input 
-                          id="wearable-upload" 
-                          type="file" 
-                          accept=".glb" 
-                          className="hidden" 
-                          onChange={handleWearableUpload}
-                          disabled={isUploadingWearable}
-                        />
-                      </Label>
-                    </div>
+                      </div>
+                    )}
 
                     {/* Wearables List */}
                     <div className="space-y-3">
