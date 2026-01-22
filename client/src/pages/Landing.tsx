@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowRight, DoorOpen, User } from 'lucide-react';
+import { Menu, X, ArrowRight, DoorOpen, User, Shirt } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
 
 export default function Landing() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,7 +17,7 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="bg-black text-white min-h-screen">
+    <div className="bg-black text-white min-h-screen font-sans">
       {/* Navigation */}
       <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-black/90 backdrop-blur-sm' : 'bg-transparent'}`}>
         <div className="max-w-full mx-auto px-4 sm:px-12 lg:px-16">
@@ -27,60 +29,64 @@ export default function Landing() {
             </h1>
           </div>
 
-            {/* Navigation links (hidden by default) */}
-            <div className="hidden">
-              <a href="#apparel-fit" className="hover:text-white transition-colors" style={{ color: '#999' }}>
-                Apparel Fit
-              </a>
-              <a href="#safety" className="hover:text-white transition-colors" style={{ color: '#999' }}>
-                Safety
-              </a>
-              <a href="#ergonomics" className="hover:text-white transition-colors" style={{ color: '#999' }}>
-                Ergonomics
-              </a>
-              <a href="#company" className="hover:text-white transition-colors" style={{ color: '#999' }}>
-                Company
-              </a>
-              <a href="#contact" className="hover:text-white transition-colors" style={{ color: '#999' }}>
-                Contact
-              </a>
-            </div>
-
-            {/* Hamburger menu button - visible on all screens */}
+            {/* Side Navigation Trigger */}
             <div>
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="hover:text-white transition-colors"
-                style={{ color: '#999' }}
-              >
-                {isMenuOpen ? <X size={32} /> : <Menu size={32} />}
-              </button>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button size="icon" variant="ghost" className="hover:text-white transition-colors p-0 h-auto w-auto bg-transparent border-none">
+                    <Shirt size={32} style={{ color: '#999' }} />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[320px] sm:w-[420px] border-l border-white/10 bg-black/95 backdrop-blur-3xl text-white p-0">
+                  <div className="h-full flex flex-col">
+                    <SheetHeader className="p-8 pb-4 text-left">
+                      <SheetTitle className="text-3xl font-bold text-white tracking-tight">
+                        Drape<span style={{ color: '#FFAD33' }}>Room</span>
+                      </SheetTitle>
+                      <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">
+                        Navigation Menu
+                      </p>
+                    </SheetHeader>
+                    
+                    <div className="flex-1 px-8 py-4 space-y-6">
+                      <a href="#apparel-fit" className="block hover:text-white py-2 transition-colors text-xl font-medium" style={{ color: '#999' }}>
+                        Apparel Fit
+                      </a>
+                      <a href="#safety" className="block hover:text-white py-2 transition-colors text-xl font-medium" style={{ color: '#999' }}>
+                        Safety
+                      </a>
+                      <a href="#ergonomics" className="block hover:text-white py-2 transition-colors text-xl font-medium" style={{ color: '#999' }}>
+                        Ergonomics
+                      </a>
+                      <a href="#company" className="block hover:text-white py-2 transition-colors text-xl font-medium" style={{ color: '#999' }}>
+                        Company
+                      </a>
+                      <a href="#contact" className="block hover:text-white py-2 transition-colors text-xl font-medium" style={{ color: '#999' }}>
+                        Contact
+                      </a>
+                      
+                      <div className="pt-8">
+                        <Button 
+                          onClick={() => window.location.href = "/room"}
+                          className="w-full py-6 text-lg font-bold rounded-xl"
+                          style={{ backgroundColor: '#FFAD33', color: 'black' }}
+                        >
+                          Enter Fitting Room
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="p-8 mt-auto border-t border-white/5">
+                      <p className="text-xs text-gray-600 font-mono uppercase tracking-widest">
+                        &copy; 2026 DrapeRoom Technologies
+                      </p>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </div>
-
-        {/* Navigation Dropdown */}
-        {isMenuOpen && (
-          <div className="bg-black/95 backdrop-blur-sm">
-            <div className="px-4 pt-2 pb-6 space-y-3 max-w-7xl mx-auto">
-              <a href="#apparel-fit" className="block hover:text-white py-2 transition-colors text-lg" style={{ color: '#999' }}>
-                Apparel Fit
-              </a>
-              <a href="#safety" className="block hover:text-white py-2 transition-colors text-lg" style={{ color: '#999' }}>
-                Safety
-              </a>
-              <a href="#ergonomics" className="block hover:text-white py-2 transition-colors text-lg" style={{ color: '#999' }}>
-                Ergonomics
-              </a>
-              <a href="#company" className="block hover:text-white py-2 transition-colors text-lg" style={{ color: '#999' }}>
-                Company
-              </a>
-              <a href="#contact" className="block hover:text-white py-2 transition-colors text-lg" style={{ color: '#999' }}>
-                Contact
-              </a>
-            </div>
-          </div>
-        )}
       </nav>
 
       {/* Hero Section */}
