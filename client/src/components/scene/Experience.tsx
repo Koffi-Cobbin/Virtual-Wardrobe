@@ -48,6 +48,11 @@ function Model({
           const center = box.getCenter(new THREE.Vector3());
           scene.position.sub(center);
           
+          // Fix male avatar inclination
+          if (url.includes('default_avatar.glb')) {
+            scene.rotation.x = 0;
+          }
+          
           setModelScene(scene);
           onLoad?.(scene);
           setIsLoading(false);

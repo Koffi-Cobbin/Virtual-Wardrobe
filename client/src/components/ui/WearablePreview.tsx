@@ -15,6 +15,11 @@ function Model({ url }: { url: string }) {
     const center = box.getCenter(new THREE.Vector3());
     cloned.position.sub(center);
     
+    // Fix male avatar inclination in preview
+    if (url.includes('default_avatar.glb')) {
+      cloned.rotation.x = 0;
+    }
+    
     return cloned;
   }, [gltf]);
 
