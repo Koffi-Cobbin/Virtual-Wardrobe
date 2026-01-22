@@ -434,6 +434,32 @@ export default function Interface() {
                         />
                       </Label>
                     </div>
+
+                    {/* Avatar Preview Card */}
+                    {avatarUrl && (
+                      <div className="mt-4">
+                        <div className="text-[10px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                          Current Avatar
+                        </div>
+                        <div className="relative cursor-default group/avatar">
+                          <WearablePreview 
+                            url={avatarUrl}
+                            isSelected={true}
+                          />
+                          <div className="mt-2 flex items-center justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-mono font-bold uppercase tracking-wider text-xs text-primary truncate">
+                                {hasUploadedAvatar ? 'Custom Avatar' : 'Default Body'}
+                              </div>
+                              <div className="text-[10px] text-gray-400 font-mono flex items-center gap-1.5 flex-wrap">
+                                <CheckCircle2 size={10} className="text-primary" />
+                                <span>ACTIVE AVATAR</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </section>
 
                   <Separator className="bg-white/5" />
