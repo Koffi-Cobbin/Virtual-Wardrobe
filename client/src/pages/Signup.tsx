@@ -45,31 +45,32 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center px-[var(--space-md)] py-[var(--space-xl)] relative overflow-y-auto font-sans">
+    <div className="min-h-screen w-full bg-black px-4 sm:px-[var(--space-md)] py-8 sm:py-[var(--space-xl)] relative font-sans">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-      
-      <div className="w-full max-w-5xl z-10 grid grid-cols-1 md:grid-cols-2 gap-[var(--space-xl)] items-center py-[var(--space-xl)] animate-view-transition">
+
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-var(--space-xl)*2)]">
+        <div className="w-full max-w-5xl z-10 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-[var(--space-xl)] items-center py-6 sm:py-[var(--space-xl)] animate-view-transition">
         {/* Left Column: Header Content */}
-        <div className="w-full text-center md:text-center flex flex-col items-center md:items-center space-y-[var(--space-lg)]">
-          <div className="flex justify-center md:justify-center mb-[var(--space-md)]">
+        <div className="w-full text-center md:text-center flex flex-col items-center md:items-center space-y-5 sm:space-y-[var(--space-lg)]">
+          <div className="flex justify-center md:justify-center mb-4 sm:mb-[var(--space-md)]">
             <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl">
               <Shirt className="w-6 h-6 text-primary" />
             </div>
           </div>
-          
-          <div className="space-y-[var(--space-sm)]">
-            <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+
+          <div className="space-y-3 sm:space-y-[var(--space-sm)]">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
               Create your Drape<span style={{ color: '#FFAD33' }}>Room</span>
             </h1>
-            <p className="text-lg text-gray-500 max-w-sm mx-auto md:mx-auto">
+            <p className="text-base sm:text-lg text-gray-500 max-w-sm mx-auto md:mx-auto px-4 sm:px-0">
               Your personal space to try outfits, explore fits, and discover your style in high-fidelity 3D.
             </p>
           </div>
-          
+
           <div className="h-8 flex items-center justify-center md:justify-center overflow-hidden">
             <div 
               key={microcopyIndex}
-              className="flex items-center gap-[var(--space-sm)] text-primary/80 text-xs font-mono uppercase tracking-[0.3em] animate-in slide-in-from-bottom-2 fade-in duration-500"
+              className="flex items-center gap-2 sm:gap-[var(--space-sm)] text-primary/80 text-xs font-mono uppercase tracking-[0.3em] animate-in slide-in-from-bottom-2 fade-in duration-500"
             >
               {microcopy[microcopyIndex].icon}
               <span>{microcopy[microcopyIndex].text}</span>
@@ -80,10 +81,10 @@ export default function Signup() {
         {/* Right Column: Card Form */}
         <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-2xl overflow-hidden relative w-full">
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
-          
-          <CardContent className="pt-[var(--space-xl)]">
-            <form onSubmit={handleSignupSubmit} className="space-y-[var(--space-lg)]">
-              <div className="space-y-[var(--space-xs)]">
+
+          <CardContent className="pt-6 sm:pt-[var(--space-xl)]">
+            <form onSubmit={handleSignupSubmit} className="space-y-5 sm:space-y-[var(--space-lg)]">
+              <div className="space-y-2 sm:space-y-[var(--space-xs)]">
                 <Label htmlFor="username" className="text-[10px] font-mono uppercase tracking-widest text-gray-500 ml-1">Username</Label>
                 <Input
                   id="username"
@@ -94,7 +95,7 @@ export default function Signup() {
                   required
                 />
               </div>
-              <div className="space-y-[var(--space-xs)]">
+              <div className="space-y-2 sm:space-y-[var(--space-xs)]">
                 <Label htmlFor="email" className="text-[10px] font-mono uppercase tracking-widest text-gray-500 ml-1">Email Address</Label>
                 <Input
                   id="email"
@@ -106,7 +107,7 @@ export default function Signup() {
                   required
                 />
               </div>
-              <div className="space-y-[var(--space-xs)]">
+              <div className="space-y-2 sm:space-y-[var(--space-xs)]">
                 <Label htmlFor="password" className="text-[10px] font-mono uppercase tracking-widest text-gray-500 ml-1">Access Key</Label>
                 <Input
                   id="password"
@@ -127,20 +128,20 @@ export default function Signup() {
               </Button>
             </form>
           </CardContent>
-          
-          <CardFooter className="pb-[var(--space-xl)] pt-0 flex flex-col gap-[var(--space-lg)]">
-            <div className="w-full flex items-center gap-[var(--space-lg)]">
+
+          <CardFooter className="pb-6 sm:pb-[var(--space-xl)] pt-0 flex flex-col gap-5 sm:gap-[var(--space-lg)]">
+            <div className="w-full flex items-center gap-4 sm:gap-[var(--space-lg)]">
               <div className="h-px flex-1 bg-white/5" />
               <span className="text-[10px] font-mono text-gray-600 uppercase tracking-widest">Or</span>
               <div className="h-px flex-1 bg-white/5" />
             </div>
-            
+
             <Button variant="outline" className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 font-mono text-[10px] uppercase tracking-widest h-12 transition-all">
               Continue with Google
             </Button>
 
-            <div className="mt-[var(--space-xl)] text-center">
-              <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-[var(--space-2xs)]">Already have a room?</p>
+            <div className="mt-5 sm:mt-[var(--space-xl)] text-center">
+              <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1 sm:mb-[var(--space-2xs)]">Already have a room?</p>
               <button 
                 onClick={() => setLocation("/login")}
                 className="text-primary hover:underline font-bold uppercase tracking-widest text-xs"
@@ -150,6 +151,7 @@ export default function Signup() {
             </div>
           </CardFooter>
         </Card>
+        </div>
       </div>
     </div>
   );

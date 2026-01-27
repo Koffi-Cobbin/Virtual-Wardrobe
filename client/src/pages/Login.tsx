@@ -31,7 +31,7 @@ export default function Login() {
   useEffect(() => {
     const messages = [
       "Your outfits are waiting.",
-      "Let’s try something new today."
+      "Let's try something new today."
     ];
     setDelightMessage(messages[Math.floor(Math.random() * messages.length)]);
   }, []);
@@ -61,7 +61,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center bg-black px-[var(--space-md)] py-[var(--space-xl)] overflow-y-auto">
+    <div className="relative min-h-screen w-full bg-black px-4 sm:px-[var(--space-md)] py-8 sm:py-[var(--space-xl)]">
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div className="h-[420px] w-[420px] rounded-full bg-primary/10 blur-[120px]" />
@@ -69,13 +69,14 @@ export default function Login() {
 
       {/* Reset success view */}
       {view === "reset-success" && (
-        <Card className="relative z-10 w-full max-w-sm bg-black/40 backdrop-blur-3xl border-white/10 text-left animate-view-transition">
-          <CardContent className="flex flex-col items-start gap-[var(--space-lg)] py-[var(--space-xl)]">
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-var(--space-xl)*2)]">
+          <Card className="relative z-10 w-full max-w-sm bg-black/40 backdrop-blur-3xl border-white/10 text-left animate-view-transition">
+          <CardContent className="flex flex-col items-start gap-4 sm:gap-[var(--space-lg)] py-6 sm:py-[var(--space-xl)]">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/20">
               <CheckCircle2 className="h-7 w-7 text-primary" />
             </div>
 
-            <div className="space-y-[var(--space-xs)]">
+            <div className="space-y-2 sm:space-y-[var(--space-xs)]">
               <CardTitle className="text-xl text-white">
                 Check your inbox
               </CardTitle>
@@ -93,42 +94,44 @@ export default function Login() {
             </Button>
           </CardContent>
         </Card>
+        </div>
       )}
 
       {/* Login / Reset */}
       {view !== "reset-success" && (
-        <div key={view} className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-[var(--space-xl)] items-center animate-view-transition">
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-var(--space-xl)*2)]">
+          <div key={view} className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-[var(--space-xl)] items-center animate-view-transition">
           {/* Left Column: Header */}
-          <div className="w-full text-center md:text-center flex flex-col items-center md:items-center space-y-[var(--space-md)]">
+          <div className="w-full text-center md:text-center flex flex-col items-center md:items-center space-y-4 sm:space-y-[var(--space-md)]">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-black/40">
               <Shirt className="h-5 w-5 text-primary" />
             </div>
 
-            <div className="space-y-[var(--space-xs)]">
-              <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+            <div className="space-y-2 sm:space-y-[var(--space-xs)]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
                 {view === "login" ? "Welcome back" : "Reset your password"}
               </h1>
 
-              <p className="text-lg text-gray-500 max-w-sm mx-auto md:mx-auto">
+              <p className="text-base sm:text-lg text-gray-500 max-w-sm mx-auto md:mx-auto px-4 sm:px-0">
                 {view === "login"
                   ? "Your room is just the way you left it. Step inside and continue your style journey."
-                  : "We’ll help you get back into your room in no time."}
+                  : "We'll help you get back into your room in no time."}
               </p>
             </div>
 
             {view === "login" && delightMessage && (
               <p className="text-primary/60 text-xs uppercase tracking-[0.2em] font-mono border-l-2 border-primary/20 pl-4 py-1">
-                “{delightMessage}”
+                "{delightMessage}"
               </p>
             )}
           </div>
 
           {/* Right Column: Card */}
           <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-2xl w-full">
-            <CardContent className="space-y-[var(--space-lg)] pt-[var(--space-lg)]">
+            <CardContent className="space-y-5 sm:space-y-[var(--space-lg)] pt-6 sm:pt-[var(--space-lg)] pb-6">
               {view === "login" ? (
-                <form onSubmit={handleLoginSubmit} className="space-y-[var(--space-lg)]">
-                  <div className="space-y-[var(--space-2xs)]">
+                <form onSubmit={handleLoginSubmit} className="space-y-5 sm:space-y-[var(--space-lg)]">
+                  <div className="space-y-2 sm:space-y-[var(--space-2xs)]">
                     <Label className="text-[10px] uppercase tracking-widest text-gray-500 ml-1">
                       Username
                     </Label>
@@ -143,7 +146,7 @@ export default function Login() {
                     />
                   </div>
 
-                  <div className="space-y-[var(--space-2xs)]">
+                  <div className="space-y-2 sm:space-y-[var(--space-2xs)]">
                     <div className="flex justify-between ml-1">
                       <Label className="text-[10px] uppercase tracking-widest text-gray-500">
                         Access Key
@@ -178,8 +181,8 @@ export default function Login() {
                   </Button>
                 </form>
               ) : (
-                <form onSubmit={handleResetSubmit} className="space-y-[var(--space-lg)]">
-                  <div className="space-y-[var(--space-2xs)]">
+                <form onSubmit={handleResetSubmit} className="space-y-5 sm:space-y-[var(--space-lg)]">
+                  <div className="space-y-2 sm:space-y-[var(--space-2xs)]">
                     <Label className="text-[10px] uppercase tracking-widest text-gray-500 ml-1">
                       Email
                     </Label>
@@ -217,8 +220,8 @@ export default function Login() {
             </CardContent>
 
             {view === "login" && (
-              <CardFooter className="flex flex-col gap-[var(--space-md)] pb-[var(--space-lg)]">
-                <div className="flex items-center gap-[var(--space-sm)]">
+              <CardFooter className="flex flex-col gap-4 sm:gap-[var(--space-md)] pb-6 sm:pb-[var(--space-lg)]">
+                <div className="flex items-center gap-3 sm:gap-[var(--space-sm)]">
                   <div className="h-px flex-1 bg-white/10" />
                   <span className="text-[10px] uppercase tracking-widest text-gray-600">
                     Or
@@ -245,6 +248,7 @@ export default function Login() {
               </CardFooter>
             )}
           </Card>
+        </div>
         </div>
       )}
     </div>
