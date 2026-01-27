@@ -194,7 +194,16 @@ export default function Login() {
               <Button variant="outline" className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 font-mono text-[10px] uppercase tracking-widest h-12 transition-all">
                 Continue with Google
               </Button>
-            </CardFooter>
+            <div className="mt-4 text-center">
+              <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">New to DrapeRoom?</p>
+              <button 
+                onClick={() => setLocation("/signup")}
+                className="text-primary hover:underline font-bold uppercase tracking-widest text-xs"
+              >
+                Create your room
+              </button>
+            </div>
+          </CardFooter>
           )}
         </Card>
       </div>

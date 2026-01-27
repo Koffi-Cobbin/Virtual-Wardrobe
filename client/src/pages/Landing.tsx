@@ -125,7 +125,7 @@ export default function Landing() {
                               Login
                             </a>
                             <a
-                              href="/login"
+                              href="/signup"
                               className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
                               style={{ color: "#999" }}
                             >
