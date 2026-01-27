@@ -54,7 +54,7 @@ export default function Signup() {
             <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl shrink-0">
               <Shirt className="w-6 h-6 text-primary" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
               Create your DrapeRoom
             </h1>
           </div>

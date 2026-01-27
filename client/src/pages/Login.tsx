@@ -104,7 +104,7 @@ export default function Login() {
               <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 shrink-0">
                 <Shirt className="h-5 w-5 text-primary" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                 {view === "login" ? "Welcome back" : "Reset your password"}
               </h1>
             </div>
