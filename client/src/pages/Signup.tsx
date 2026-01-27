@@ -49,8 +49,8 @@ export default function Signup() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="w-full max-w-md z-10 space-y-[var(--space-xl)] py-[var(--space-xl)] animate-view-transition">
-        <div className="text-center space-y-[var(--space-sm)]">
-          <div className="flex justify-center mb-[var(--space-md)]">
+        <div className="text-left space-y-[var(--space-sm)]">
+          <div className="flex justify-start mb-[var(--space-md)]">
             <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl">
               <Shirt className="w-6 h-6 text-primary" />
             </div>
@@ -58,11 +58,11 @@ export default function Signup() {
           <h1 className="text-4xl font-bold text-white tracking-tight">
             Create your DrapeRoom
           </h1>
-          <p className="text-gray-400 text-sm leading-relaxed max-w-[280px] mx-auto">
+          <p className="text-gray-400 text-sm leading-relaxed max-w-[280px]">
             Your personal space to try outfits, explore fits, and discover your style in 3D.
           </p>
           
-          <div className="h-6 flex items-center justify-center overflow-hidden">
+          <div className="h-6 flex items-center justify-start overflow-hidden">
             <div 
               key={microcopyIndex}
               className="flex items-center gap-[var(--space-xs)] text-primary/60 text-[10px] font-mono uppercase tracking-[0.2em] animate-in slide-in-from-bottom-2 fade-in duration-500"

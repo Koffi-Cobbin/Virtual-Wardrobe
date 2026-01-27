@@ -69,8 +69,8 @@ export default function Login() {
 
       {/* Reset success view */}
       {view === "reset-success" && (
-        <Card className="relative z-10 w-full max-w-sm bg-black/40 backdrop-blur-3xl border-white/10 text-center animate-view-transition">
-          <CardContent className="flex flex-col items-center gap-[var(--space-lg)] py-[var(--space-xl)]">
+        <Card className="relative z-10 w-full max-w-sm bg-black/40 backdrop-blur-3xl border-white/10 text-left animate-view-transition">
+          <CardContent className="flex flex-col items-start gap-[var(--space-lg)] py-[var(--space-xl)]">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/20">
               <CheckCircle2 className="h-7 w-7 text-primary" />
             </div>
@@ -99,8 +99,8 @@ export default function Login() {
       {view !== "reset-success" && (
         <div key={view} className="relative z-10 w-full max-w-sm space-y-[var(--space-lg)] animate-view-transition">
           {/* Header */}
-          <div className="text-center space-y-[var(--space-xs)]">
-            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-white/10">
+          <div className="text-left space-y-[var(--space-xs)]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10">
               <Shirt className="h-5 w-5 text-primary" />
             </div>
 
