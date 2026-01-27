@@ -51,7 +51,7 @@ export default function Signup() {
       <div className="flex flex-col items-center justify-center min-h-full px-4 py-12 relative z-10 w-full">
         <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-[var(--space-xl)] items-center animate-view-transition">
           {/* Left Column: Header Content */}
-          <div className="w-full text-center flex flex-col items-center space-y-5">
+          <div className="w-full text-center md:text-left flex flex-col items-center md:items-start space-y-5">
             <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl">
               <Shirt className="w-6 h-6 text-primary" />
             </div>
@@ -60,12 +60,12 @@ export default function Signup() {
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
                 Create your Drape<span style={{ color: '#FFAD33' }}>Room</span>
               </h1>
-              <p className="text-base sm:text-lg text-gray-500 max-w-sm px-4 sm:px-0">
+              <p className="text-base sm:text-lg text-gray-500 max-w-sm mx-auto md:mx-0 px-4 sm:px-0">
                 Your personal space to try outfits, explore fits, and discover your style in high-fidelity 3D.
               </p>
             </div>
 
-            <div className="h-8 flex items-center justify-center overflow-hidden">
+            <div className="h-8 flex items-center justify-center md:justify-start overflow-hidden">
               <div 
                 key={microcopyIndex}
                 className="flex items-center gap-2 text-primary/80 text-xs font-mono uppercase tracking-[0.3em] animate-in slide-in-from-bottom-2 fade-in duration-500"
