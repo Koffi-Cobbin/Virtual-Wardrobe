@@ -99,7 +99,7 @@ export default function Login() {
       {view !== "reset-success" && (
         <div key={view} className="relative z-10 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-[var(--space-xl)] items-center animate-view-transition">
           {/* Left Column: Header */}
-          <div className="text-center md:text-left flex flex-col items-center md:items-start space-y-[var(--space-md)]">
+          <div className="text-center md:text-center flex flex-col items-center md:items-center space-y-[var(--space-md)]">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-black/40">
               <Shirt className="h-5 w-5 text-primary" />
             </div>
@@ -109,7 +109,7 @@ export default function Login() {
                 {view === "login" ? "Welcome back" : "Reset your password"}
               </h1>
 
-              <p className="text-lg text-gray-500 max-w-sm mx-auto md:mx-0">
+              <p className="text-lg text-gray-500 max-w-sm mx-auto md:mx-auto">
                 {view === "login"
                   ? "Your room is just the way you left it. Step inside and continue your style journey."
                   : "We’ll help you get back into your room in no time."}
@@ -117,7 +117,7 @@ export default function Login() {
             </div>
 
             {view === "login" && delightMessage && (
-              <p className="text-primary/60 text-xs uppercase tracking-[0.2em] font-mono border-l-2 md:border-l-2 border-primary/20 pl-4 py-1">
+              <p className="text-primary/60 text-xs uppercase tracking-[0.2em] font-mono border-l-2 border-primary/20 pl-4 py-1">
                 “{delightMessage}”
               </p>
             )}
