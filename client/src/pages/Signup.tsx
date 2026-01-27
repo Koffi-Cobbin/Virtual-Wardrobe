@@ -45,7 +45,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black font-sans overflow-y-auto overflow-x-hidden">
+    <div className="fixed inset-0 bg-black font-sans overflow-y-auto overflow-x-hidden no-scrollbar">
       {/* Back to Home Button */}
       <div className="absolute top-6 left-6 z-20">
         <Button 
