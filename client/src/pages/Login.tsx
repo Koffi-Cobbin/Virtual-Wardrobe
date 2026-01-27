@@ -97,9 +97,9 @@ export default function Login() {
 
       {/* Login / Reset */}
       {view !== "reset-success" && (
-        <div key={view} className="relative z-10 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-[var(--space-xl)] items-center animate-view-transition">
+        <div key={view} className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-[var(--space-xl)] items-center animate-view-transition">
           {/* Left Column: Header */}
-          <div className="text-center md:text-center flex flex-col items-center md:items-center space-y-[var(--space-md)]">
+          <div className="w-full text-center md:text-center flex flex-col items-center md:items-center space-y-[var(--space-md)]">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-black/40">
               <Shirt className="h-5 w-5 text-primary" />
             </div>
