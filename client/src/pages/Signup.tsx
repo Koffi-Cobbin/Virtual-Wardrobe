@@ -50,8 +50,8 @@ export default function Signup() {
       
       <div className="w-full max-w-5xl z-10 grid grid-cols-1 md:grid-cols-2 gap-[var(--space-xl)] items-center py-[var(--space-xl)] animate-view-transition">
         {/* Left Column: Header Content */}
-        <div className="text-left space-y-[var(--space-lg)]">
-          <div className="flex justify-start mb-[var(--space-md)]">
+        <div className="text-center md:text-left flex flex-col items-center md:items-start space-y-[var(--space-lg)]">
+          <div className="flex justify-center md:justify-start mb-[var(--space-md)]">
             <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl">
               <Shirt className="w-6 h-6 text-primary" />
             </div>
@@ -66,7 +66,7 @@ export default function Signup() {
             </p>
           </div>
           
-          <div className="h-8 flex items-center justify-start overflow-hidden">
+          <div className="h-8 flex items-center justify-center md:justify-start overflow-hidden">
             <div 
               key={microcopyIndex}
               className="flex items-center gap-[var(--space-sm)] text-primary/80 text-xs font-mono uppercase tracking-[0.3em] animate-in slide-in-from-bottom-2 fade-in duration-500"
