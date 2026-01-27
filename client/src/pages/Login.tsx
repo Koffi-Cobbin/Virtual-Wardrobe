@@ -61,7 +61,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative flex min-h-[100svh] w-full items-center justify-center bg-black px-[var(--space-md)]">
+    <div className="relative flex min-h-screen w-full items-center justify-center bg-black px-[var(--space-md)] py-[var(--space-xl)] overflow-y-auto">
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div className="h-[420px] w-[420px] rounded-full bg-primary/10 blur-[120px]" />
