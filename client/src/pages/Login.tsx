@@ -100,14 +100,13 @@ export default function Login() {
         <div key={view} className="relative z-10 w-full max-w-sm space-y-[var(--space-lg)] animate-view-transition">
           {/* Header */}
           <div className="text-center space-y-[var(--space-xs)]">
-            <div className="flex items-center justify-center gap-[var(--space-sm)]">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 shrink-0">
-                <Shirt className="h-5 w-5 text-primary" />
-              </div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                {view === "login" ? "Welcome back" : "Reset your password"}
-              </h1>
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-white/10">
+              <Shirt className="h-5 w-5 text-primary" />
             </div>
+
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              {view === "login" ? "Welcome back" : "Reset your password"}
+            </h1>
 
             <p className="text-sm text-gray-500">
               {view === "login"
