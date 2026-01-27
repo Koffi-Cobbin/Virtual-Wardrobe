@@ -45,12 +45,12 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+    <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center px-[var(--space-md)] relative overflow-hidden font-sans">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
       
-      <div className="w-full max-w-md z-10 space-y-8 py-12">
-        <div className="text-center space-y-3">
-          <div className="flex justify-center mb-4">
+      <div className="w-full max-w-md z-10 space-y-[var(--space-xl)] py-[var(--space-xl)]">
+        <div className="text-center space-y-[var(--space-sm)]">
+          <div className="flex justify-center mb-[var(--space-md)]">
             <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl">
               <Shirt className="w-6 h-6 text-primary" />
             </div>
@@ -65,7 +65,7 @@ export default function Signup() {
           <div className="h-6 flex items-center justify-center overflow-hidden">
             <div 
               key={microcopyIndex}
-              className="flex items-center gap-2 text-primary/60 text-[10px] font-mono uppercase tracking-[0.2em] animate-in slide-in-from-bottom-2 fade-in duration-500"
+              className="flex items-center gap-[var(--space-xs)] text-primary/60 text-[10px] font-mono uppercase tracking-[0.2em] animate-in slide-in-from-bottom-2 fade-in duration-500"
             >
               {microcopy[microcopyIndex].icon}
               <span>{microcopy[microcopyIndex].text}</span>
@@ -76,9 +76,9 @@ export default function Signup() {
         <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-2xl overflow-hidden relative">
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
           
-          <CardContent className="pt-8">
-            <form onSubmit={handleSignupSubmit} className="space-y-5">
-              <div className="space-y-2">
+          <CardContent className="pt-[var(--space-xl)]">
+            <form onSubmit={handleSignupSubmit} className="space-y-[var(--space-lg)]">
+              <div className="space-y-[var(--space-xs)]">
                 <Label htmlFor="username" className="text-[10px] font-mono uppercase tracking-widest text-gray-500 ml-1">Username</Label>
                 <Input
                   id="username"
@@ -89,7 +89,7 @@ export default function Signup() {
                   required
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-[var(--space-xs)]">
                 <Label htmlFor="email" className="text-[10px] font-mono uppercase tracking-widest text-gray-500 ml-1">Email Address</Label>
                 <Input
                   id="email"
@@ -101,7 +101,7 @@ export default function Signup() {
                   required
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-[var(--space-xs)]">
                 <Label htmlFor="password" className="text-[10px] font-mono uppercase tracking-widest text-gray-500 ml-1">Access Key</Label>
                 <Input
                   id="password"
@@ -123,8 +123,8 @@ export default function Signup() {
             </form>
           </CardContent>
           
-          <CardFooter className="pb-8 pt-0 flex flex-col gap-4">
-            <div className="w-full flex items-center gap-4">
+          <CardFooter className="pb-[var(--space-xl)] pt-0 flex flex-col gap-[var(--space-lg)]">
+            <div className="w-full flex items-center gap-[var(--space-lg)]">
               <div className="h-px flex-1 bg-white/5" />
               <span className="text-[10px] font-mono text-gray-600 uppercase tracking-widest">Or</span>
               <div className="h-px flex-1 bg-white/5" />
@@ -134,8 +134,8 @@ export default function Signup() {
               Continue with Google
             </Button>
 
-            <div className="mt-4 text-center">
-              <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">Already have a room?</p>
+            <div className="mt-[var(--space-xl)] text-center">
+              <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-[var(--space-2xs)]">Already have a room?</p>
               <button 
                 onClick={() => setLocation("/login")}
                 className="text-primary hover:underline font-bold uppercase tracking-widest text-xs"
