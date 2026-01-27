@@ -62,6 +62,19 @@ export default function Login() {
 
   return (
     <div className="fixed inset-0 bg-black font-sans overflow-y-auto overflow-x-hidden">
+      {/* Back to Home Button */}
+      <div className="absolute top-6 left-6 z-20">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => setLocation("/")}
+          className="text-gray-500 hover:text-white uppercase tracking-widest text-[10px]"
+        >
+          <ArrowLeft className="mr-2 h-3 w-3" />
+          Home
+        </Button>
+      </div>
+
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div className="h-[420px] w-[420px] rounded-full bg-primary/10 blur-[120px]" />

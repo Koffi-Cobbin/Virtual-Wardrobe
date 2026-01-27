@@ -46,12 +46,26 @@ export default function Signup() {
 
   return (
     <div className="fixed inset-0 bg-black font-sans overflow-y-auto overflow-x-hidden">
+      {/* Back to Home Button */}
+      <div className="absolute top-6 left-6 z-20">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => setLocation("/")}
+          className="text-gray-500 hover:text-white uppercase tracking-widest text-[10px]"
+        >
+          <Shirt className="mr-2 h-3 w-3" />
+          Home
+        </Button>
+      </div>
+
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="flex flex-col items-center justify-center min-h-full px-4 py-12 relative z-10 w-full">
         <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-[var(--space-xl)] items-center animate-view-transition">
           {/* Left Column: Header Content */}
-          <div className="w-full text-center md:text-left flex flex-col items-center md:items-start space-y-5">
+          <div className="w-full text-center md:text-center flex flex-col items-center md:items-center space-y-4 sm:space-y-[var(--space-md)]">
+            
             <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl">
               <Shirt className="w-6 h-6 text-primary" />
             </div>
@@ -60,7 +74,8 @@ export default function Signup() {
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
                 Create your Drape<span style={{ color: '#FFAD33' }}>Room</span>
               </h1>
-              <p className="text-base sm:text-lg text-gray-500 max-w-sm mx-auto md:mx-0 px-4 sm:px-0">
+              <p className="text-base sm:text-lg text-gray-500 max-w-sm mx-auto md:mx-auto px-4 sm:px-0">
+                
                 Your personal space to try outfits, explore fits, and discover your style in high-fidelity 3D.
               </p>
             </div>
