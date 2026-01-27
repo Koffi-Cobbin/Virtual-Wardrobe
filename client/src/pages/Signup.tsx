@@ -58,10 +58,10 @@ export default function Signup() {
           </div>
           
           <div className="space-y-[var(--space-sm)]">
-            <h1 className="text-5xl sm:text-6xl font-bold text-white tracking-tight leading-[1.1]">
-              Create your <br />Drape<span className="text-primary">Room</span>
+            <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+              Create your DrapeRoom
             </h1>
-            <p className="text-gray-400 text-lg leading-relaxed max-w-md mx-auto md:mx-auto">
+            <p className="text-lg text-gray-500 max-w-sm mx-auto md:mx-auto">
               Your personal space to try outfits, explore fits, and discover your style in high-fidelity 3D.
             </p>
           </div>
