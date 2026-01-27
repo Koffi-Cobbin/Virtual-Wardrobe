@@ -115,24 +115,14 @@ export default function Landing() {
                         <div className="h-px bg-white/10 w-full mb-4 mt-2" />
                         
                         {!user ? (
-                          <>
-                            <a
-                              href="/login"
-                              className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
-                              style={{ color: "#999" }}
-                            >
-                              <LogIn size={24} />
-                              Login
-                            </a>
-                            <a
-                              href="/signup"
-                              className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
-                              style={{ color: "#999" }}
-                            >
-                              <UserPlus size={24} />
-                              Signup
-                            </a>
-                          </>
+                          <a
+                            href="/login"
+                            className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
+                            style={{ color: "#999" }}
+                          >
+                            <LogIn size={24} />
+                            Login / Signup
+                          </a>
                         ) : (
                           <>
                             <a
