@@ -48,7 +48,7 @@ export default function Signup() {
     <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center px-[var(--space-md)] relative overflow-hidden font-sans">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
       
-      <div className="w-full max-w-md z-10 space-y-[var(--space-xl)] py-[var(--space-xl)]">
+      <div className="w-full max-w-md z-10 space-y-[var(--space-xl)] py-[var(--space-xl)] animate-view-transition">
         <div className="text-center space-y-[var(--space-sm)]">
           <div className="flex justify-center mb-[var(--space-md)]">
             <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl">
