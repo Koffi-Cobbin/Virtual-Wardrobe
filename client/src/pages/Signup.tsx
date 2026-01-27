@@ -50,14 +50,14 @@ export default function Signup() {
       
       <div className="w-full max-w-md z-10 space-y-[var(--space-xl)] py-[var(--space-xl)] animate-view-transition">
         <div className="text-center space-y-[var(--space-sm)]">
-          <div className="flex justify-center mb-[var(--space-md)]">
-            <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl">
+          <div className="flex items-center justify-center gap-[var(--space-sm)]">
+            <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl shrink-0">
               <Shirt className="w-6 h-6 text-primary" />
             </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+              Create your DrapeRoom
+            </h1>
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">
-            Create your DrapeRoom
-          </h1>
           <p className="text-gray-400 text-sm leading-relaxed max-w-[280px] mx-auto">
             Your personal space to try outfits, explore fits, and discover your style in 3D.
           </p>
