@@ -78,7 +78,7 @@ export default function Signup() {
         </div>
 
         {/* Right Column: Card Form */}
-        <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-2xl overflow-hidden relative max-w-md mx-auto md:ml-auto md:mr-0">
+        <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-2xl overflow-hidden relative w-full">
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
           
           <CardContent className="pt-[var(--space-xl)]">

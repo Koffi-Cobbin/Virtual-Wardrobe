@@ -124,7 +124,7 @@ export default function Login() {
           </div>
 
           {/* Right Column: Card */}
-          <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-2xl">
+          <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-2xl w-full">
             <CardContent className="space-y-[var(--space-lg)] pt-[var(--space-lg)]">
               {view === "login" ? (
                 <form onSubmit={handleLoginSubmit} className="space-y-[var(--space-lg)]">
