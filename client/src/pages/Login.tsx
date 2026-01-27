@@ -83,7 +83,7 @@ export default function Login() {
     <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
       
-      <div className="w-full max-w-md z-10 space-y-8">
+      <div className="w-full max-w-md z-10 space-y-8 py-12">
         <div className="text-center space-y-3">
           <div className="flex justify-center mb-4">
             <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl">
@@ -194,16 +194,17 @@ export default function Login() {
               <Button variant="outline" className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 font-mono text-[10px] uppercase tracking-widest h-12 transition-all">
                 Continue with Google
               </Button>
-            <div className="mt-4 text-center">
-              <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">New to DrapeRoom?</p>
-              <button 
-                onClick={() => setLocation("/signup")}
-                className="text-primary hover:underline font-bold uppercase tracking-widest text-xs"
-              >
-                Create your room
-              </button>
-            </div>
-          </CardFooter>
+              
+              <div className="mt-4 text-center">
+                <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mb-1">New to DrapeRoom?</p>
+                <button 
+                  onClick={() => setLocation("/signup")}
+                  className="text-primary hover:underline font-bold uppercase tracking-widest text-xs"
+                >
+                  Create your room
+                </button>
+              </div>
+            </CardFooter>
           )}
         </Card>
       </div>
