@@ -61,7 +61,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-black px-4 sm:px-[var(--space-md)] py-8 sm:py-[var(--space-xl)]">
+    <div className="fixed inset-0 bg-black font-sans overflow-y-auto">
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div className="h-[420px] w-[420px] rounded-full bg-primary/10 blur-[120px]" />
@@ -69,7 +69,7 @@ export default function Login() {
 
       {/* Reset success view */}
       {view === "reset-success" && (
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-var(--space-xl)*2)]">
+        <div className="flex flex-col items-center justify-center min-h-full px-4 py-12 relative z-10">
           <Card className="relative z-10 w-full max-w-sm bg-black/40 backdrop-blur-3xl border-white/10 text-left animate-view-transition">
           <CardContent className="flex flex-col items-start gap-4 sm:gap-[var(--space-lg)] py-6 sm:py-[var(--space-xl)]">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/20">
@@ -99,7 +99,7 @@ export default function Login() {
 
       {/* Login / Reset */}
       {view !== "reset-success" && (
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-var(--space-xl)*2)]">
+        <div className="flex flex-col items-center justify-center min-h-full px-4 py-12 relative z-10">
           <div key={view} className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-[var(--space-xl)] items-center animate-view-transition">
           {/* Left Column: Header */}
           <div className="w-full text-center md:text-center flex flex-col items-center md:items-center space-y-4 sm:space-y-[var(--space-md)]">
