@@ -48,24 +48,28 @@ export default function Signup() {
     <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center px-[var(--space-md)] relative overflow-hidden font-sans">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
       
-      <div className="w-full max-w-md z-10 space-y-[var(--space-xl)] py-[var(--space-xl)] animate-view-transition">
-        <div className="text-left space-y-[var(--space-sm)]">
+      <div className="w-full max-w-5xl z-10 grid grid-cols-1 md:grid-cols-2 gap-[var(--space-xl)] items-center py-[var(--space-xl)] animate-view-transition">
+        {/* Left Column: Header Content */}
+        <div className="text-left space-y-[var(--space-lg)]">
           <div className="flex justify-start mb-[var(--space-md)]">
             <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl">
               <Shirt className="w-6 h-6 text-primary" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">
-            Create your DrapeRoom
-          </h1>
-          <p className="text-gray-400 text-sm leading-relaxed max-w-[280px]">
-            Your personal space to try outfits, explore fits, and discover your style in 3D.
-          </p>
           
-          <div className="h-6 flex items-center justify-start overflow-hidden">
+          <div className="space-y-[var(--space-sm)]">
+            <h1 className="text-5xl sm:text-6xl font-bold text-white tracking-tight leading-[1.1]">
+              Create your <br />Drape<span className="text-primary">Room</span>
+            </h1>
+            <p className="text-gray-400 text-lg leading-relaxed max-w-md">
+              Your personal space to try outfits, explore fits, and discover your style in high-fidelity 3D.
+            </p>
+          </div>
+          
+          <div className="h-8 flex items-center justify-start overflow-hidden">
             <div 
               key={microcopyIndex}
-              className="flex items-center gap-[var(--space-xs)] text-primary/60 text-[10px] font-mono uppercase tracking-[0.2em] animate-in slide-in-from-bottom-2 fade-in duration-500"
+              className="flex items-center gap-[var(--space-sm)] text-primary/80 text-xs font-mono uppercase tracking-[0.3em] animate-in slide-in-from-bottom-2 fade-in duration-500"
             >
               {microcopy[microcopyIndex].icon}
               <span>{microcopy[microcopyIndex].text}</span>
@@ -73,7 +77,8 @@ export default function Signup() {
           </div>
         </div>
 
-        <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-2xl overflow-hidden relative">
+        {/* Right Column: Card Form */}
+        <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-2xl overflow-hidden relative max-w-md mx-auto md:ml-auto md:mr-0">
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
           
           <CardContent className="pt-[var(--space-xl)]">

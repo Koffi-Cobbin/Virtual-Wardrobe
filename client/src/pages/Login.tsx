@@ -97,32 +97,34 @@ export default function Login() {
 
       {/* Login / Reset */}
       {view !== "reset-success" && (
-        <div key={view} className="relative z-10 w-full max-w-sm space-y-[var(--space-lg)] animate-view-transition">
-          {/* Header */}
-          <div className="text-left space-y-[var(--space-xs)]">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10">
+        <div key={view} className="relative z-10 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-[var(--space-xl)] items-center animate-view-transition">
+          {/* Left Column: Header */}
+          <div className="text-left space-y-[var(--space-md)]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-black/40">
               <Shirt className="h-5 w-5 text-primary" />
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
-              {view === "login" ? "Welcome back" : "Reset your password"}
-            </h1>
+            <div className="space-y-[var(--space-xs)]">
+              <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+                {view === "login" ? "Welcome back" : "Reset your password"}
+              </h1>
 
-            <p className="text-sm text-gray-500">
-              {view === "login"
-                ? "Your room is just the way you left it."
-                : "We’ll help you get back into your room."}
-            </p>
+              <p className="text-lg text-gray-500 max-w-sm">
+                {view === "login"
+                  ? "Your room is just the way you left it. Step inside and continue your style journey."
+                  : "We’ll help you get back into your room in no time."}
+              </p>
+            </div>
 
             {view === "login" && delightMessage && (
-              <p className="text-primary/60 text-[10px] uppercase tracking-widest font-mono">
+              <p className="text-primary/60 text-xs uppercase tracking-[0.2em] font-mono border-l-2 border-primary/20 pl-4 py-1">
                 “{delightMessage}”
               </p>
             )}
           </div>
 
-          {/* Card */}
-          <Card className="bg-black/40 backdrop-blur-3xl border-white/10">
+          {/* Right Column: Card */}
+          <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-2xl">
             <CardContent className="space-y-[var(--space-lg)] pt-[var(--space-lg)]">
               {view === "login" ? (
                 <form onSubmit={handleLoginSubmit} className="space-y-[var(--space-lg)]">
