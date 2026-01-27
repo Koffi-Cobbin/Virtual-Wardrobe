@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shirt, CheckCircle2, ShieldCheck, CreditCard, Trash2 } from "lucide-react";
+import { Shirt, CheckCircle2, ShieldCheck, CreditCard, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Signup() {
@@ -54,7 +54,7 @@ export default function Signup() {
           onClick={() => setLocation("/")}
           className="text-gray-500 hover:text-white uppercase tracking-widest text-[10px]"
         >
-          <Shirt className="mr-2 h-3 w-3" />
+          <ArrowLeft className="mr-2 h-3 w-3" />
           Home
         </Button>
       </div>
