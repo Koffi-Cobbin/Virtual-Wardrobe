@@ -117,7 +117,7 @@ export default function Landing() {
                         {!user ? (
                           <>
                             <a
-                              href="/auth?mode=login"
+                              href="/login"
                               className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
                               style={{ color: "#999" }}
                             >
@@ -125,7 +125,7 @@ export default function Landing() {
                               Login
                             </a>
                             <a
-                              href="/auth?mode=signup"
+                              href="/login"
                               className="flex items-center gap-3 hover:text-white py-3 transition-colors text-xl font-medium"
                               style={{ color: "#999" }}
                             >
