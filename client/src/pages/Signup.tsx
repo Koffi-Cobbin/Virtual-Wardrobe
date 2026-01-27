@@ -45,11 +45,11 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-black px-4 sm:px-[var(--space-md)] py-8 sm:py-[var(--space-xl)] relative font-sans overflow-y-auto">
+    <div className="min-h-screen w-full bg-black relative font-sans overflow-x-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <div className="w-full max-w-5xl z-10 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-[var(--space-xl)] items-center py-6 animate-view-transition">
+      <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 relative z-10">
+        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-[var(--space-xl)] items-center animate-view-transition">
           {/* Left Column: Header Content */}
           <div className="w-full text-center flex flex-col items-center space-y-5">
             <div className="w-12 h-12 bg-black border border-white/10 rounded-xl flex items-center justify-center shadow-2xl">
