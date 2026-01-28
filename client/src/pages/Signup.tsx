@@ -74,10 +74,10 @@ export default function Signup() {
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
                 Create your Drape<span style={{ color: '#FFAD33' }}>Room</span>
               </h1>
-              <p className="text-base sm:text-lg text-gray-500 max-w-sm mx-auto md:mx-auto px-4 sm:px-0">
+              {/* <p className="text-base sm:text-lg text-gray-500 max-w-sm mx-auto md:mx-auto px-4 sm:px-0">
                 
                 Your personal space to try outfits, explore fits, and discover your style in high-fidelity 3D.
-              </p>
+              </p> */}
             </div>
 
             <div className="h-8 flex items-center justify-center md:justify-start overflow-hidden">

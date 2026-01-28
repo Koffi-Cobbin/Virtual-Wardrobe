@@ -187,12 +187,11 @@ export default function Landing() {
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
-              Where your style comes alive.
+              Your personal space to try outfits
             </h1>
 
             <p className="text-base sm:text-lg text-gray-300 mb-6 leading-relaxed">
-              Try on outfits, mix looks, and see how they fit on your avatar in 3D
-              <br /> — before you buy.
+              Explore fits and discover your style in high-fidelity 3D.
             </p>
 
             <p className="text-xl sm:text-2xl md:text-3xl font-bold mb-10 tracking-tight">
