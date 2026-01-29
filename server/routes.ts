@@ -1,13 +1,6 @@
 import type { Express } from "express";
 import { type Server } from "http";
-import { storage } from "./storage";
-import {
-  createUser,
-  authenticateUser,
-  findUserByEmail,
-  updateUserPassword,
-  getUserById,
-} from "./db";
+import { signupUser, authenticateUser, findUserByEmail } from "./auth";
 import {
   validateSignupForm,
   validateLoginForm,
@@ -22,56 +15,13 @@ export async function registerRoutes(
   // Signup endpoint
   app.post("/api/auth/signup", async (req, res) => {
     try {
-      const { username, email, password } = req.body;
-
-      // Sanitize inputs
-      const sanitizedUsername = sanitizeInput(username);
-      const sanitizedEmail = sanitizeInput(email);
-
-      // Validate form data
-      const validation = validateSignupForm(
-        sanitizedUsername,
-        sanitizedEmail,
-        password
-      );
-
-      if (!validation.isValid) {
-        return res.status(400).json({
-          success: false,
-          errors: validation.errors,
-        });
+      const result = await signupUser(req.body);
+      if (result.success) {
+        res.status(201).json(result);
+      } else {
+        res.status(400).json(result);
       }
-
-      // Create user
-      const user = await createUser(sanitizedUsername, sanitizedEmail, password);
-
-      // Return success (without password)
-      const { password: _, ...userWithoutPassword } = user;
-
-      res.status(201).json({
-        success: true,
-        message: "Account created successfully",
-        user: userWithoutPassword,
-      });
     } catch (error) {
-      // Handle specific errors
-      if (error instanceof Error) {
-        if (error.message === "Username already exists") {
-          return res.status(409).json({
-            success: false,
-            errors: { username: "This username is already taken" },
-          });
-        }
-
-        if (error.message === "Email already exists") {
-          return res.status(409).json({
-            success: false,
-            errors: { email: "This email is already registered" },
-          });
-        }
-      }
-
-      // Generic error
       console.error("Signup error:", error);
       res.status(500).json({
         success: false,

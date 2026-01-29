@@ -52,3 +52,32 @@ export async function signupUser(formData: any) {
     return { success: false, message: 'Failed to save user' };
   }
 }
+
+export async function authenticateUser(username: string, password: string) {
+  try {
+    const data = fs.readFileSync(DB_PATH, 'utf-8');
+    const users = JSON.parse(data);
+    const user = users.find((u: any) => u.username === username);
+
+    if (!user) return null;
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) return null;
+
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  } catch (error) {
+    console.error('Login error:', error);
+    return null;
+  }
+}
+
+export async function findUserByEmail(email: string) {
+  try {
+    const data = fs.readFileSync(DB_PATH, 'utf-8');
+    const users = JSON.parse(data);
+    return users.find((u: any) => u.email === email);
+  } catch (error) {
+    return null;
+  }
+}
