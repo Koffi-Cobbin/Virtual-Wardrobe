@@ -86,16 +86,25 @@ export default function Login() {
     setErrors({});
 
     try {
+      console.log("Attempting login for:", formData.username);
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
         },
         body: JSON.stringify({
           username: formData.username,
           password: formData.password,
         }),
       });
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Non-JSON response received:", text);
+        throw new Error("Server returned non-JSON response. Check console for details.");
+      }
 
       const data = await response.json();
 

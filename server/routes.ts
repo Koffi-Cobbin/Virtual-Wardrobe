@@ -33,7 +33,17 @@ export async function registerRoutes(
   // Login endpoint
   app.post("/api/auth/login", async (req, res) => {
     try {
+      console.log("Login request received:", req.body);
       const { username, password } = req.body;
+
+      if (!username || !password) {
+        return res.status(400).json({
+          success: false,
+          errors: {
+            general: "Username and password are required",
+          },
+        });
+      }
 
       // Sanitize inputs
       const sanitizedUsername = sanitizeInput(username);

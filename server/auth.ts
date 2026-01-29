@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const DB_PATH = path.join(process.cwd(), 'db', 'users.json');
 
