@@ -125,7 +125,18 @@ export default function Interface() {
   } = useStore();
 
   // Mock auth check - in real app would come from useAuth
-  const user = null; 
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error("Failed to parse user from localStorage", e);
+      }
+    }
+  }, []);
   
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingWearable, setIsUploadingWearable] = useState(false);
@@ -429,10 +440,14 @@ export default function Interface() {
             <div className="h-full flex flex-col">
               <SheetHeader className="p-8 pb-4 text-left">
                 <SheetTitle className="text-3xl font-bold text-white tracking-tight">
-                  Drape<span style={{ color: '#FFAD33' }}>Room</span>
+                  {user ? (
+                    <>Welcome back, <span style={{ color: '#FFAD33' }}>{user.username}</span></>
+                  ) : (
+                    <>Drape<span style={{ color: '#FFAD33' }}>Room</span></>
+                  )}
                 </SheetTitle>
                 <p className="text-gray-500 text-[10px] font-mono tracking-[0.3em] uppercase">
-                  Your style. Your fits. Your space.
+                  {user ? "Your personal fitting room" : "Your style. Your fits. Your space."}
                 </p>
               </SheetHeader>
               

@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": 1,
+    "username": "Koffi-Cobbin",
+    "email": "yaphetofori@gmail.com",
+    "password": "$2b$10$VS8bIu0oQ7U9Vt9h/p9ce.CKbAjicZIR5Qznrgr6/jwDnqTWCs26i",
+    "createdAt": "2026-01-29T20:39:20.151Z",
+    "lastLogin": "2026-01-29T20:39:20.151Z"
+  }
+]
