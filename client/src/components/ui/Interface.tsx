@@ -441,7 +441,10 @@ export default function Interface() {
               <SheetHeader className="p-8 pb-4 text-left">
                 <SheetTitle className="text-3xl font-bold text-white tracking-tight">
                   {user ? (
-                    <>Welcome back, <span style={{ color: '#FFAD33' }}>{user.username}</span></>
+                    <div className="flex flex-col">
+                      <span>Welcome back,</span>
+                      <span style={{ color: '#FFAD33' }}>{user.username}</span>
+                    </div>
                   ) : (
                     <>Drape<span style={{ color: '#FFAD33' }}>Room</span></>
                   )}
